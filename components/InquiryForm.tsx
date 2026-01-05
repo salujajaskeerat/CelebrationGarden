@@ -7,7 +7,8 @@ const InquiryForm: React.FC = () => {
     email: '',
     phone: '',
     date: '',
-    guests: '50'
+    guests: '150',
+    lawn: 'emerald'
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -17,7 +18,6 @@ const InquiryForm: React.FC = () => {
 
   return (
     <section id="inquire" className="py-24 md:py-36 bg-[#064e3b] relative overflow-hidden">
-      {/* Pattern Overlay */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
       
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center relative z-10">
@@ -30,18 +30,14 @@ const InquiryForm: React.FC = () => {
           
           <div className="space-y-10">
             <div className="flex items-center gap-8">
-              <div className="w-14 h-14 border border-white/20 flex items-center justify-center rounded-full text-[#C5A059] text-2xl font-serif">
-                I
-              </div>
+              <div className="w-14 h-14 border border-white/20 flex items-center justify-center rounded-full text-[#C5A059] text-2xl font-serif">I</div>
               <div>
                 <h5 className="text-white font-serif text-xl italic mb-1">Private Estate Tour</h5>
                 <p className="text-white/40 text-xs uppercase tracking-widest font-bold">Personalized Walkthrough</p>
               </div>
             </div>
             <div className="flex items-center gap-8">
-              <div className="w-14 h-14 border border-white/20 flex items-center justify-center rounded-full text-[#C5A059] text-2xl font-serif">
-                II
-              </div>
+              <div className="w-14 h-14 border border-white/20 flex items-center justify-center rounded-full text-[#C5A059] text-2xl font-serif">II</div>
               <div>
                 <h5 className="text-white font-serif text-xl italic mb-1">Bespoke Curation</h5>
                 <p className="text-white/40 text-xs uppercase tracking-widest font-bold">Concept & Logistics Mapping</p>
@@ -56,10 +52,10 @@ const InquiryForm: React.FC = () => {
               <h3 className="text-[#064e3b] font-serif text-3xl mb-2 italic">Engagement Inquiry</h3>
               <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em]">Direct Concierge Access</p>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Your Full Name</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Full Name</label>
                   <input 
                     type="text" required
                     className="w-full bg-transparent border-b border-gray-100 py-3 focus:outline-none focus:border-[#C5A059] transition-colors placeholder:text-gray-200"
@@ -69,7 +65,7 @@ const InquiryForm: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Electronic Mail</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Email Address</label>
                   <input 
                     type="email" required
                     className="w-full bg-transparent border-b border-gray-100 py-3 focus:outline-none focus:border-[#C5A059] transition-colors placeholder:text-gray-200"
@@ -80,19 +76,20 @@ const InquiryForm: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Mobile Contact</label>
-                  <input 
-                    type="tel"
-                    className="w-full bg-transparent border-b border-gray-100 py-3 focus:outline-none focus:border-[#C5A059] transition-colors placeholder:text-gray-200"
-                    placeholder="+1 (000) 000-0000"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  />
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Preferred Lawn</label>
+                  <select 
+                    className="w-full bg-transparent border-b border-gray-100 py-3 focus:outline-none focus:border-[#C5A059] transition-colors bg-white cursor-pointer text-sm"
+                    value={formData.lawn}
+                    onChange={(e) => setFormData({...formData, lawn: e.target.value})}
+                  >
+                    <option value="emerald">The Emerald Grand Lawn</option>
+                    <option value="grove">The Secret Grove Lawn</option>
+                  </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Desired Celebration Date</label>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Desired Date</label>
                   <input 
                     type="date" required
                     className="w-full bg-transparent border-b border-gray-100 py-3 focus:outline-none focus:border-[#C5A059] transition-colors"
@@ -102,29 +99,38 @@ const InquiryForm: React.FC = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Attendance Intensity</label>
-                <select 
-                  className="w-full bg-transparent border-b border-gray-100 py-3 focus:outline-none focus:border-[#C5A059] transition-colors bg-white cursor-pointer"
-                  value={formData.guests}
-                  onChange={(e) => setFormData({...formData, guests: e.target.value})}
-                >
-                  <option value="50">Intimate (Up to 50 guests)</option>
-                  <option value="150">Bespoke (50 - 150 guests)</option>
-                  <option value="300">Grand (150 - 300 guests)</option>
-                  <option value="unlimited">Elite (300+ guests)</option>
-                </select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Guest Count</label>
+                  <select 
+                    className="w-full bg-transparent border-b border-gray-100 py-3 focus:outline-none focus:border-[#C5A059] transition-colors bg-white cursor-pointer text-sm"
+                    value={formData.guests}
+                    onChange={(e) => setFormData({...formData, guests: e.target.value})}
+                  >
+                    <option value="50">Up to 50 guests</option>
+                    <option value="150">50 - 150 guests</option>
+                    <option value="300">150 - 300 guests</option>
+                    <option value="unlimited">300+ guests</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Mobile Phone</label>
+                  <input 
+                    type="tel"
+                    className="w-full bg-transparent border-b border-gray-100 py-3 focus:outline-none focus:border-[#C5A059] transition-colors placeholder:text-gray-200"
+                    placeholder="+1 (000) 000-0000"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  />
+                </div>
               </div>
 
               <button 
                 type="submit" 
-                className="w-full bg-[#064e3b] text-white py-6 font-bold uppercase tracking-[0.4em] text-[10px] hover:bg-[#C5A059] transition-all duration-500 mt-6 shadow-2xl"
+                className="w-full bg-[#064e3b] text-white py-6 font-bold uppercase tracking-[0.4em] text-[10px] hover:bg-[#C5A059] transition-all duration-500 mt-4 shadow-2xl rounded-sm"
               >
                 Secure Consultation
               </button>
-              <p className="text-[9px] text-center text-gray-400 uppercase tracking-[0.2em] mt-6">
-                * An Event Concierge will verify availability and reach out within 24 hours.
-              </p>
             </form>
           </div>
         </div>

@@ -11,11 +11,8 @@ interface InvitationData {
   date: string;
   time: string;
   locationName: string;
-  address: string;
   description: string;
   heroImage: string;
-  detailImage: string;
-  mapUrl: string;
 }
 
 const Countdown: React.FC<{ targetDate: string }> = ({ targetDate }) => {
@@ -60,6 +57,7 @@ const Countdown: React.FC<{ targetDate: string }> = ({ targetDate }) => {
 const ScrapbookForm: React.FC = () => {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
   const [file, setFile] = useState<File | null>(null);
+  const [phone, setPhone] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +71,11 @@ const ScrapbookForm: React.FC = () => {
         <div className="w-16 h-16 bg-[#064e3b] text-white rounded-full flex items-center justify-center mx-auto mb-6">✓</div>
         <h4 className="font-serif text-2xl italic text-[#064e3b]">Memory Captured</h4>
         <p className="text-gray-400 text-[10px] uppercase tracking-widest mt-2">Your contribution is now part of our legacy.</p>
+        {phone && (
+          <p className="text-[#C5A059] text-[9px] font-bold uppercase tracking-[0.2em] mt-4 italic">
+            A digital copy will be sent to your WhatsApp soon.
+          </p>
+        )}
       </div>
     );
   }
@@ -94,7 +97,17 @@ const ScrapbookForm: React.FC = () => {
           className="w-full border-b border-gray-100 py-3 outline-none focus:border-[#C5A059] text-sm transition-colors resize-none"
         ></textarea>
         
-        <div className="relative group">
+        <div className="space-y-1">
+          <input 
+            type="tel" placeholder="Phone Number (Optional)"
+            className="w-full border-b border-gray-100 py-3 outline-none focus:border-[#C5A059] text-sm transition-colors"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+          <p className="text-[8px] text-gray-300 italic">Provide your number to receive a digital copy of the scrapbook via WhatsApp.</p>
+        </div>
+
+        <div className="relative group pt-4">
           <input 
             type="file" accept="image/*" 
             onChange={(e) => setFile(e.target.files?.[0] || null)}
@@ -125,11 +138,14 @@ const ClientInvitation: React.FC<{ slug: string }> = ({ slug }) => {
   const [data, setData] = useState<InvitationData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Fixed location data
+  const fixedAddress = "122 Garden Lane, Emerald Valley, EV 90210";
+  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=Celebration+Garden+Estates+${encodeURIComponent(fixedAddress)}`;
+
   useEffect(() => {
     const isBirthday = slug.toLowerCase().includes('birthday');
     const isCorporate = slug.toLowerCase().includes('corporate');
     
-    // Simulate API fetch
     setTimeout(() => {
       setData({
         slug,
@@ -139,15 +155,12 @@ const ClientInvitation: React.FC<{ slug: string }> = ({ slug }) => {
         date: 'June 14, 2025',
         time: isBirthday ? '7:00 PM - Late' : '4:00 PM onwards',
         locationName: isBirthday ? 'The Orchard Terrace' : 'The Grand Pavilion',
-        address: '122 Garden Lane, Emerald Valley, EV 90210',
         description: isBirthday 
           ? "Three decades of life, laughter, and light. Join us for an evening of vintage champagne and dancing under the stars."
           : "Under the starlight of Emerald Valley, we invite you to witness a milestone celebration. Your presence is the greatest gift.",
         heroImage: isBirthday 
           ? 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=1600'
           : 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1600',
-        detailImage: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=1200',
-        mapUrl: 'https://maps.google.com/maps?q=Celebration+Garden+Estates'
       });
       setLoading(false);
     }, 500);
@@ -184,7 +197,7 @@ const ClientInvitation: React.FC<{ slug: string }> = ({ slug }) => {
         </div>
       </section>
 
-      {/* High-Contrast Content Section */}
+      {/* Primary Invitation Box */}
       <section className="relative z-20 -mt-20 px-6">
         <div className="max-w-4xl mx-auto bg-white shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] p-10 md:p-24 text-center rounded-sm">
           <div className="w-12 h-12 border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-12">
@@ -208,7 +221,7 @@ const ClientInvitation: React.FC<{ slug: string }> = ({ slug }) => {
               <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">{data.date}</p>
             </div>
             <div className="space-y-4">
-              <span className="text-[#C5A059] text-[10px] font-bold uppercase tracking-[0.4em] block mb-2">The Venue</span>
+              <span className="text-[#C5A059] text-[10px] font-bold uppercase tracking-[0.4em] block mb-2">The Space</span>
               <p className="font-serif text-4xl italic leading-tight">{data.locationName}</p>
               <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Celebration Garden Estates</p>
             </div>
@@ -216,65 +229,60 @@ const ClientInvitation: React.FC<{ slug: string }> = ({ slug }) => {
         </div>
       </section>
 
-      {/* Map & Get Directions Section - Black Aesthetic */}
-      <section className="py-32 px-6 bg-[#1a1a1a] text-white mt-32 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#C5A059] to-transparent opacity-30"></div>
-        
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-          <div className="space-y-10">
+      {/* Map & Get Directions Section - Moved up per request */}
+      <section className="py-24 px-6 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="space-y-10 order-2 lg:order-1">
             <div>
-              <span className="text-[#C5A059] text-[10px] font-bold uppercase tracking-[0.4em] block mb-6">Navigation</span>
-              <h3 className="font-serif text-5xl md:text-7xl italic leading-tight">Finding the <br />Estate Gates</h3>
-              <p className="text-white/40 font-light text-lg mt-8 leading-relaxed">
-                Nestled in the heart of Emerald Valley, Celebration Garden is easily accessible via the private Carriage Road. Valet services will be waiting at the main entrance for all guests.
+              <span className="text-[#C5A059] text-[10px] font-bold uppercase tracking-[0.4em] block mb-6">Logistics & Navigation</span>
+              <h3 className="font-serif text-5xl md:text-6xl italic leading-tight text-[#1a1a1a]">Arrival at <br />the Estate</h3>
+              <p className="text-gray-400 font-light text-lg mt-8 leading-relaxed">
+                Celebration Garden is nestled in the heart of Emerald Valley. Valet services will be waiting for all guests at the main carriage entrance.
               </p>
             </div>
             
-            <div className="bg-white/5 border border-white/10 p-10 rounded-sm">
-              <p className="text-[#C5A059] text-[10px] font-bold uppercase tracking-[0.4em] mb-4">Official Address</p>
-              <p className="font-serif text-2xl italic mb-2">{data.address}</p>
-              <p className="text-white/30 text-xs font-light">Emerald Valley District, EV 90210</p>
+            <div className="bg-[#1a1a1a] p-10 rounded-sm text-white shadow-2xl">
+              <p className="text-[#C5A059] text-[10px] font-bold uppercase tracking-[0.4em] mb-4">Official Location</p>
+              <p className="font-serif text-2xl italic mb-2">{fixedAddress}</p>
+              <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest mb-8">Emerald Valley, EV 90210</p>
+              <a 
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-[#C5A059] text-white px-10 py-5 font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-white hover:text-[#1a1a1a] transition-all w-full text-center shadow-xl"
+              >
+                Get Directions
+              </a>
             </div>
           </div>
           
-          <div className="relative group overflow-hidden shadow-2xl rounded-sm aspect-square md:aspect-video lg:aspect-square">
-            {/* Map Placeholder with Overlaid Button */}
+          <div className="relative group overflow-hidden shadow-2xl rounded-sm aspect-video order-1 lg:order-2 border border-gray-100">
             <div className="absolute inset-0 bg-gray-900">
               <img 
                 src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1200" 
-                alt="Static Map Location" 
-                className="w-full h-full object-cover grayscale opacity-30 transition-all duration-1000 group-hover:scale-105 group-hover:opacity-50"
+                alt="Estate Map Location" 
+                className="w-full h-full object-cover grayscale opacity-40 transition-all duration-1000 group-hover:scale-105 group-hover:opacity-60"
               />
               <div className="absolute inset-0 flex items-center justify-center p-6">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-[#C5A059] rounded-full flex items-center justify-center shadow-2xl mb-8 mx-auto animate-pulse">
+                 <div className="w-16 h-16 bg-[#C5A059] rounded-full flex items-center justify-center shadow-2xl animate-pulse">
                     <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                     </svg>
-                  </div>
-                  <a 
-                    href={data.mapUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-white text-[#1a1a1a] px-12 py-5 font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-[#C5A059] hover:text-white transition-all shadow-2xl block"
-                  >
-                    Get Directions
-                  </a>
-                </div>
+                 </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Scrapbook Section - White Aesthetic */}
-      <section className="py-32 px-6 bg-white">
+      {/* Scrapbook Section */}
+      <section className="py-32 px-6 bg-white border-y border-gray-50">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-20 items-center">
           <div className="lg:col-span-5">
             <span className="text-[#C5A059] text-[10px] font-bold uppercase tracking-[0.4em] block mb-4">Shared Memories</span>
-            <h3 className="font-serif text-5xl md:text-7xl text-[#1a1a1a] italic leading-[1.1] mb-8">Contribute to the <br />Scrapbook</h3>
+            <h3 className="font-serif text-5xl md:text-7xl text-[#1a1a1a] italic leading-[1.1] mb-8">The Digital <br />Scrapbook</h3>
             <p className="text-gray-400 font-light text-lg max-w-md leading-relaxed mb-10">
-              We are gathering a digital collection of well-wishes and candid photos. Share your favorite memory or a note of celebration.
+              Contribute a wish or a photo to our collection. Guests who provide a phone number will receive a copy of the finalized scrapbook.
             </p>
             <div className="flex -space-x-3">
               {[1, 2, 3, 4].map(i => (
