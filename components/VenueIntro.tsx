@@ -22,6 +22,7 @@ const VenueIntro: React.FC = () => {
               <img 
                 src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=1200" 
                 alt="The Grand Pavilion" 
+                loading="lazy"
                 className="w-full h-[450px] md:h-[650px] object-cover transition-transform duration-1000 group-hover:scale-105"
               />
             </div>
@@ -47,40 +48,6 @@ const VenueIntro: React.FC = () => {
           </div>
 
           <div className="md:col-span-12 h-24"></div>
-
-          {/* New Digital Feature Block */}
-          <div className="md:col-span-12 bg-white p-12 md:p-20 rounded-sm shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-16 mb-24">
-             <div className="md:w-1/2">
-                <p className="text-[#C5A059] font-bold tracking-[0.4em] uppercase text-[10px] mb-6">Digital Concierge</p>
-                <h3 className="text-[#064e3b] font-serif text-4xl mb-8 italic">The Invitation Suite</h3>
-                <p className="text-gray-500 text-lg font-light leading-relaxed mb-8">
-                  Your journey starts long before the wedding day. Every event at Celebration Garden includes a bespoke, 
-                  hosted invitation page designed to captivate your guests and provide seamless navigation to our estate.
-                </p>
-                <a 
-                  href="/invitation/sarah-michael-2025" 
-                  className="inline-block bg-[#064e3b] text-white px-10 py-5 font-bold uppercase tracking-[0.4em] text-[10px] hover:bg-[#C5A059] transition-all"
-                >
-                  View Sample Invitation
-                </a>
-             </div>
-             <div className="md:w-1/2 relative">
-                <div className="absolute inset-0 bg-[#C5A059]/10 rounded-sm -rotate-3"></div>
-                <div className="relative bg-gray-50 p-6 shadow-2xl rounded-sm border border-gray-100">
-                   <div className="aspect-[9/16] bg-white rounded-sm overflow-hidden border border-gray-200 shadow-inner">
-                      <img 
-                        src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=600" 
-                        alt="Invitation Preview" 
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute bottom-10 left-0 right-0 text-center px-4">
-                        <p className="text-white font-serif text-2xl drop-shadow-lg">Sarah & Michael</p>
-                        <p className="text-white/80 text-[10px] uppercase tracking-widest mt-2">The Estate • June 2025</p>
-                      </div>
-                   </div>
-                </div>
-             </div>
-          </div>
 
           {/* Section 2 */}
           <div className="md:col-span-5 order-2 md:order-1 md:pr-16 flex flex-col justify-center py-12">
@@ -109,6 +76,7 @@ const VenueIntro: React.FC = () => {
               <img 
                 src="https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&q=80&w=1200" 
                 alt="Secret Rose Garden" 
+                loading="lazy"
                 className="w-full h-[450px] md:h-[650px] object-cover transition-transform duration-1000 group-hover:scale-105"
               />
             </div>
