@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Celebration Garden | Modern Secret Garden Venue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #F9F8F3;
+        color: #1a1a1a;
+      }
+      .font-serif {
+        font-family: 'Playfair Display', serif;
+      }
+      .bg-ivory { background-color: #F9F8F3; }
+      .text-emerald { color: #064e3b; }
+      .bg-emerald { background-color: #064e3b; }
+      .text-gold { color: #C5A059; }
+      .border-gold { border-color: #C5A059; }
+      .bg-gold { background-color: #C5A059; }
+
+      @keyframes slow-zoom {
+        from { transform: scale(1); }
+        to { transform: scale(1.1); }
+      }
+      .animate-slow-zoom {
+        animation: slow-zoom 20s ease-out infinite alternate;
+      }
+      
+      @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in-up {
+        animation: fade-in-up 1.2s ease-out forwards;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "vite": "https://esm.sh/vite@^7.3.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <!-- This line is crucial for running locally with Vite -->
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
