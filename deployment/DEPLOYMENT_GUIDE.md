@@ -58,24 +58,63 @@ sudo -u postgres psql -c "\l" | grep celebration_garden
 
 ## Step 3: Deploy Strapi
 
-### 3.1 Clone and Setup
+### 3.1 Copy Files to Server
+
+**Option A: Using SCP (From Your Local Machine)**
+
+From your local machine (not on EC2):
+```bash
+# Copy Strapi project to EC2
+scp -i your-key.pem -r celebration-garden-cms ubuntu@your-ec2-ip:/var/www/
+
+# SSH into EC2
+ssh -i your-key.pem ubuntu@your-ec2-ip
+
+# Now continue on EC2
+cd /var/www/celebration-garden-cms
+```
+
+**Option B: Using rsync (Better for Updates)**
+
+From your local machine:
+```bash
+# Sync Strapi project (excludes node_modules and .tmp)
+rsync -avz -e "ssh -i your-key.pem" \
+  --exclude 'node_modules' \
+  --exclude '.tmp' \
+  --exclude '.git' \
+  celebration-garden-cms/ \
+  ubuntu@your-ec2-ip:/var/www/celebration-garden-cms/
+```
+
+**Option C: Using Git (If You Have a Repository)**
 
 ```bash
 # Navigate to web directory
 cd /var/www
 
-# Clone your Strapi repository
-git clone your-strapi-repo-url celebration-garden-cms
+# Clone your Strapi repository (replace with your actual URL)
+git clone https://github.com/yourusername/celebration-garden-cms.git celebration-garden-cms
 cd celebration-garden-cms
+```
+
+### 3.2 Install Dependencies
+
+```bash
+# Make sure you're in the Strapi directory
+cd /var/www/celebration-garden-cms
 
 # Install dependencies
 npm install
 
 # Install PostgreSQL driver
 npm install pg
+
+# Verify installation
+npm list pg
 ```
 
-### 3.2 Configure Environment
+### 3.3 Configure Environment
 
 ```bash
 # Copy example env file
@@ -90,7 +129,7 @@ nano .env
 - Update `DATABASE_PASSWORD` with the password from Step 2.1
 - Generate new security keys (see below)
 
-### 3.3 Generate Security Keys
+### 3.4 Generate Security Keys
 
 ```bash
 # Generate random keys for production
@@ -104,13 +143,13 @@ Run this 5 times and update:
 - `TRANSFER_TOKEN_SALT`
 - `JWT_SECRET`
 
-### 3.4 Build Strapi
+### 3.5 Build Strapi
 
 ```bash
 npm run build
 ```
 
-### 3.5 Test Strapi
+### 3.6 Test Strapi
 
 ```bash
 npm start
@@ -120,20 +159,57 @@ Visit `http://your-ec2-ip:1337/admin` to verify it works. Press Ctrl+C to stop.
 
 ## Step 4: Deploy Next.js
 
-### 4.1 Clone and Setup
+### 4.1 Copy Files to Server
+
+**Option A: Using SCP (From Your Local Machine)**
+
+From your local machine (not on EC2):
+```bash
+# Copy Next.js project to EC2 (from CelebrationGarden root directory)
+scp -i your-key.pem -r . ubuntu@your-ec2-ip:/var/www/celebration-garden
+
+# SSH into EC2
+ssh -i your-key.pem ubuntu@your-ec2-ip
+
+# Now continue on EC2
+cd /var/www/celebration-garden
+```
+
+**Option B: Using rsync (Better for Updates)**
+
+From your local machine (from CelebrationGarden root):
+```bash
+# Sync Next.js project (excludes node_modules and .next)
+rsync -avz -e "ssh -i your-key.pem" \
+  --exclude 'node_modules' \
+  --exclude '.next' \
+  --exclude '.git' \
+  --exclude 'celebration-garden-cms' \
+  ./ \
+  ubuntu@your-ec2-ip:/var/www/celebration-garden/
+```
+
+**Option C: Using Git (If You Have a Repository)**
 
 ```bash
 cd /var/www
 
-# Clone your Next.js repository
-git clone your-nextjs-repo-url celebration-garden
+# Clone your Next.js repository (replace with your actual URL)
+git clone https://github.com/yourusername/celebration-garden.git celebration-garden
 cd celebration-garden
+```
+
+### 4.2 Install Dependencies
+
+```bash
+# Make sure you're in the Next.js directory
+cd /var/www/celebration-garden
 
 # Install dependencies
 npm install
 ```
 
-### 4.2 Configure Environment
+### 4.3 Configure Environment
 
 ```bash
 # Copy example env file
@@ -148,13 +224,13 @@ nano .env.production
 - `STRAPI_API_TOKEN` (if using API tokens)
 - `NEXT_PUBLIC_WHATSAPP_PHONE`
 
-### 4.3 Build Next.js
+### 4.4 Build Next.js
 
 ```bash
 npm run build
 ```
 
-### 4.4 Test Next.js
+### 4.5 Test Next.js
 
 ```bash
 npm start
@@ -378,6 +454,8 @@ pm2 restart strapi
 ```
 
 ## Troubleshooting
+
+For detailed troubleshooting, see `TROUBLESHOOTING.md`
 
 ### Strapi won't start
 - Check `.env` file configuration

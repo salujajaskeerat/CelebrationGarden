@@ -1,0 +1,13 @@
+# SSH Config for Celebration Garden EC2 Instance
+# Add this to your ~/.ssh/config file
+
+Host celebration-garden
+    HostName ec2-13-203-214-241.ap-south-1.compute.amazonaws.com
+    User ubuntu
+    IdentityFile ~/.ssh/CelebrationGarden.pem
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+# After adding this, you can simply connect with:
+# ssh celebration-garden
+
