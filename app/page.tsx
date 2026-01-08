@@ -1,70 +1,37 @@
+'use client'
 
-import React, { useEffect, useState } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import VenueIntro from './components/VenueIntro';
-import Gallery from './components/Gallery';
-import PriceCalculator from './components/PriceCalculator';
-import FAQ from './components/FAQ';
-import Testimonials from './components/Testimonials';
-import InquiryForm from './components/InquiryForm';
-import Footer from './components/Footer';
-import ClientInvitation from './components/ClientInvitation';
+import { useRouter } from 'next/navigation'
+import Navbar from '../components/Navbar'
+import Hero from '../components/Hero'
+import VenueIntro from '../components/VenueIntro'
+import Gallery from '../components/Gallery'
+import PriceCalculator from '../components/PriceCalculator'
+import FAQ from '../components/FAQ'
+import Testimonials from '../components/Testimonials'
+import InquiryForm from '../components/InquiryForm'
+import Footer from '../components/Footer'
+import WhatsAppButton from '../components/WhatsAppButton'
 
-const App: React.FC = () => {
-  const [view, setView] = useState<'landing' | 'invitation'>('landing');
-  const [activeInvitation, setActiveInvitation] = useState<string>('sarah-michael-2025');
-
-  // Sync state with URL path
-  useEffect(() => {
-    const handleNavigation = () => {
-      const path = window.location.pathname;
-      if (path.startsWith('/invitation/')) {
-        const slug = path.split('/').filter(Boolean).pop();
-        if (slug) {
-          setActiveInvitation(slug);
-          setView('invitation');
-          window.scrollTo(0, 0);
-        }
-      } else {
-        setView('landing');
-      }
-    };
-
-    handleNavigation();
-    window.addEventListener('popstate', handleNavigation);
-    return () => window.removeEventListener('popstate', handleNavigation);
-  }, []);
+export default function Home() {
+  const router = useRouter()
 
   const navigateToInvite = (slug: string) => {
-    window.history.pushState({}, '', `/invitation/${slug}`);
-    setActiveInvitation(slug);
-    setView('invitation');
-    window.scrollTo(0, 0);
-  };
-
-  const navigateToHome = () => {
-    window.history.pushState({}, '', '/');
-    setView('landing');
-    window.scrollTo(0, 0);
-  };
-
-  if (view === 'invitation') {
-    return (
-      <div className="relative">
-        <button 
-          onClick={navigateToHome}
-          className="fixed top-6 left-6 z-[200] bg-white text-[#1a1a1a] border border-gray-200 px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-[#1a1a1a] hover:text-white transition-all shadow-xl"
-        >
-          ← Back to Site
-        </button>
-        <ClientInvitation slug={activeInvitation} />
-      </div>
-    );
+    router.push(`/invitation/${slug}`)
   }
+
+  // WhatsApp configuration
+  // Set NEXT_PUBLIC_WHATSAPP_PHONE in .env.local (e.g., NEXT_PUBLIC_WHATSAPP_PHONE=1234567890)
+  const whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '1234567890'; // Replace with your phone number
+  const whatsappMessage = "Hello! I'm interested in learning more about Celebration Garden Estates.";
 
   return (
     <div className="relative min-h-screen selection:bg-[#064e3b] selection:text-white">
+      {/* WhatsApp Button - Fixed on mobile */}
+      <WhatsAppButton 
+        phoneNumber={whatsappPhone}
+        message={whatsappMessage}
+      />
+      
       {/* Demo Multi-Type Toggle */}
       <div className="fixed bottom-8 right-8 z-[200] flex flex-col gap-3 items-end group">
         <button 
@@ -110,7 +77,6 @@ const App: React.FC = () => {
       </main>
       <Footer />
     </div>
-  );
-};
+  )
+}
 
-export default App;

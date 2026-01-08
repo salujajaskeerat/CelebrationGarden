@@ -1,0 +1,29 @@
+# Strapi Environment Variables for Production
+# Copy these to your .env file in celebration-garden-cms directory
+
+NODE_ENV=production
+HOST=0.0.0.0
+PORT=1337
+
+# Database Configuration (PostgreSQL)
+DATABASE_CLIENT=postgres
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=celebration_garden
+DATABASE_USERNAME=strapi_user
+DATABASE_PASSWORD=your_secure_password_here
+DATABASE_SSL=false
+DATABASE_SCHEMA=public
+
+# Strapi Security Keys (Generate new ones for production!)
+# Run: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))" (5 times)
+APP_KEYS=your-app-keys-here
+API_TOKEN_SALT=your-api-token-salt-here
+ADMIN_JWT_SECRET=your-admin-jwt-secret-here
+TRANSFER_TOKEN_SALT=your-transfer-token-salt-here
+JWT_SECRET=your-jwt-secret-here
+
+# Optional: Database Connection Pool
+DATABASE_POOL_MIN=2
+DATABASE_POOL_MAX=10
+

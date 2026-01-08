@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: var(--font-inter), sans-serif;
+  background-color: #F9F8F3;
+  color: #1a1a1a;
+}
+
+.font-serif {
+  font-family: var(--font-playfair), serif;
+}
+
+.bg-ivory { 
+  background-color: #F9F8F3; 
+}
+
+.text-emerald { 
+  color: #064e3b; 
+}
+
+.bg-emerald { 
+  background-color: #064e3b; 
+}
+
+.text-gold { 
+  color: #C5A059; 
+}
+
+.border-gold { 
+  border-color: #C5A059; 
+}
+
+.bg-gold { 
+  background-color: #C5A059; 
+}
+

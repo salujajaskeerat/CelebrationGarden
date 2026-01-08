@@ -1,0 +1,17 @@
+# Next.js Environment Variables for Production
+# Copy these to your .env.production file in celebration-garden directory
+
+# Strapi Configuration
+NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
+# For production, update to your Strapi URL:
+# NEXT_PUBLIC_STRAPI_URL=https://api.yourdomain.com
+
+# Strapi API Token (Optional, for protected endpoints)
+STRAPI_API_TOKEN=your-api-token-here
+
+# WhatsApp Configuration
+NEXT_PUBLIC_WHATSAPP_PHONE=1234567890
+
+# Node Environment
+NODE_ENV=production
+

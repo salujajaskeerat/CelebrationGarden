@@ -1,16 +1,16 @@
+'use client'
 
 import React, { useState, useEffect } from 'react';
 
 type EventType = 'Wedding' | 'Corporate' | 'Birthday' | 'Social';
 
-interface InvitationData {
+export interface InvitationData {
   slug: string;
   type: EventType;
   title: string;
   subtitle: string;
   date: string;
   time: string;
-  locationName: string;
   description: string;
   heroImage: string;
 }
@@ -54,15 +54,52 @@ const Countdown: React.FC<{ targetDate: string }> = ({ targetDate }) => {
   );
 };
 
-const ScrapbookForm: React.FC = () => {
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+const ScrapbookForm: React.FC<{ invitationSlug: string }> = ({ invitationSlug }) => {
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [file, setFile] = useState<File | null>(null);
   const [phone, setPhone] = useState('');
+  const [name, setName] = useState('');
+  const [message, setMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
-    setTimeout(() => setStatus('success'), 1500);
+    setErrorMessage('');
+
+    try {
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('message', message);
+      formData.append('invitationSlug', invitationSlug);
+      if (phone) {
+        formData.append('phone', phone);
+      }
+      if (file) {
+        formData.append('photo', file);
+      }
+
+      const response = await fetch('/api/scrapbook', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to save entry');
+      }
+
+      setStatus('success');
+      // Reset form
+      setName('');
+      setMessage('');
+      setPhone('');
+      setFile(null);
+    } catch (error) {
+      setStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : 'An error occurred');
+    }
   };
 
   if (status === 'success') {
@@ -87,13 +124,27 @@ const ScrapbookForm: React.FC = () => {
         <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-2">Leave a wish & photo for the host</p>
       </div>
       
+      {status === 'error' && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
+          {errorMessage}
+        </div>
+      )}
+
       <div className="space-y-4">
         <input 
-          type="text" placeholder="Your Name" required
+          type="text" 
+          placeholder="Your Name" 
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           className="w-full border-b border-gray-100 py-3 outline-none focus:border-[#C5A059] text-sm transition-colors"
         />
         <textarea 
-          placeholder="A message to share..." required rows={3}
+          placeholder="A message to share..." 
+          required 
+          rows={3}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
           className="w-full border-b border-gray-100 py-3 outline-none focus:border-[#C5A059] text-sm transition-colors resize-none"
         ></textarea>
         
@@ -125,8 +176,9 @@ const ScrapbookForm: React.FC = () => {
       </div>
 
       <button 
-        type="submit" disabled={status === 'submitting'}
-        className="w-full bg-[#1a1a1a] text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#C5A059] transition-all shadow-xl"
+        type="submit" 
+        disabled={status === 'submitting'}
+        className="w-full bg-[#1a1a1a] text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#C5A059] transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {status === 'submitting' ? 'Submitting...' : 'Post to Digital Scrapbook'}
       </button>
@@ -134,46 +186,10 @@ const ScrapbookForm: React.FC = () => {
   );
 };
 
-const ClientInvitation: React.FC<{ slug: string }> = ({ slug }) => {
-  const [data, setData] = useState<InvitationData | null>(null);
-  const [loading, setLoading] = useState(true);
-
+const ClientInvitation: React.FC<{ data: InvitationData }> = ({ data }) => {
   // Fixed location data
   const fixedAddress = "122 Garden Lane, Emerald Valley, EV 90210";
   const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=Celebration+Garden+Estates+${encodeURIComponent(fixedAddress)}`;
-
-  useEffect(() => {
-    const isBirthday = slug.toLowerCase().includes('birthday');
-    const isCorporate = slug.toLowerCase().includes('corporate');
-    
-    setTimeout(() => {
-      setData({
-        slug,
-        type: isBirthday ? 'Birthday' : isCorporate ? 'Corporate' : 'Wedding',
-        title: isBirthday ? "Olivia's Thirtieth" : isCorporate ? "Annual Tech Summit" : "Sarah & Michael",
-        subtitle: isBirthday ? "A Night of Golden Glamour" : isCorporate ? "Networking in the Garden" : "An Invitation to Love",
-        date: 'June 14, 2025',
-        time: isBirthday ? '7:00 PM - Late' : '4:00 PM onwards',
-        locationName: isBirthday ? 'The Orchard Terrace' : 'The Grand Pavilion',
-        description: isBirthday 
-          ? "Three decades of life, laughter, and light. Join us for an evening of vintage champagne and dancing under the stars."
-          : "Under the starlight of Emerald Valley, we invite you to witness a milestone celebration. Your presence is the greatest gift.",
-        heroImage: isBirthday 
-          ? 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=1600'
-          : 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=1600',
-      });
-      setLoading(false);
-    }, 500);
-  }, [slug]);
-
-  if (loading) return (
-    <div className="h-screen bg-white flex flex-col items-center justify-center">
-      <div className="w-12 h-12 border-2 border-gray-100 border-t-[#C5A059] rounded-full animate-spin mb-6"></div>
-      <p className="font-serif italic text-gray-300 text-lg tracking-widest">Unveiling invitation...</p>
-    </div>
-  );
-
-  if (!data) return null;
 
   return (
     <div className="bg-[#F9F8F3] min-h-screen text-[#1a1a1a] selection:bg-[#C5A059] selection:text-white pb-40">
@@ -222,8 +238,8 @@ const ClientInvitation: React.FC<{ slug: string }> = ({ slug }) => {
             </div>
             <div className="space-y-4">
               <span className="text-[#C5A059] text-[10px] font-bold uppercase tracking-[0.4em] block mb-2">The Space</span>
-              <p className="font-serif text-4xl italic leading-tight">{data.locationName}</p>
-              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Celebration Garden Estates</p>
+              <p className="font-serif text-4xl italic leading-tight">Celebration Garden Estates</p>
+              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Emerald Valley, EV 90210</p>
             </div>
           </div>
         </div>
@@ -294,7 +310,7 @@ const ClientInvitation: React.FC<{ slug: string }> = ({ slug }) => {
             </div>
           </div>
           <div className="lg:col-span-7">
-            <ScrapbookForm />
+            <ScrapbookForm invitationSlug={data.slug} />
           </div>
         </div>
       </section>
