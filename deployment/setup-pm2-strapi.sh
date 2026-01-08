@@ -42,18 +42,29 @@ fi
 cd "$STRAPI_DIR"
 
 # Check if PM2 config exists in deployment directory
-PM2_CONFIG="~/CelebrationGarden/deployment/pm2-ecosystem.config.js"
-if [ ! -f "$PM2_CONFIG" ]; then
-    # Try alternative location
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Check locations in order of likelihood
+if [ -f "$SCRIPT_DIR/pm2-ecosystem.config.js" ]; then
+    # If script is in deployment directory, config should be there too
+    PM2_CONFIG="$SCRIPT_DIR/pm2-ecosystem.config.js"
+elif [ -f "$HOME/CelebrationGarden/deployment/pm2-ecosystem.config.js" ]; then
+    # Check home directory (using $HOME instead of ~)
+    PM2_CONFIG="$HOME/CelebrationGarden/deployment/pm2-ecosystem.config.js"
+elif [ -f "./deployment/pm2-ecosystem.config.js" ]; then
+    # Try relative path
     PM2_CONFIG="./deployment/pm2-ecosystem.config.js"
-    if [ ! -f "$PM2_CONFIG" ]; then
-        echo -e "${RED}❌ Error: PM2 config file not found${NC}"
-        echo "   Expected locations:"
-        echo "   - /var/www/CelebrationGarden/deployment/pm2-ecosystem.config.js"
-        echo "   - ./deployment/pm2-ecosystem.config.js"
-        exit 1
-    fi
+else
+    echo -e "${RED}❌ Error: PM2 config file not found${NC}"
+    echo "   Searched locations:"
+    echo "   - $SCRIPT_DIR/pm2-ecosystem.config.js"
+    echo "   - $HOME/CelebrationGarden/deployment/pm2-ecosystem.config.js"
+    echo "   - ./deployment/pm2-ecosystem.config.js"
+    exit 1
 fi
+
+echo -e "${GREEN}✅ Found PM2 config at: $PM2_CONFIG${NC}"
 
 # Copy PM2 config to a convenient location
 echo -e "${YELLOW}📋 Copying PM2 config...${NC}"
