@@ -63,8 +63,7 @@ echo ""
 
 # Create application directories
 echo "📁 Creating application directories..."
-sudo mkdir -p /var/www/CelebrationGarden/backend
-sudo mkdir -p /var/www/CelebrationGarden/frontend
+sudo mkdir -p /var/www/CelebrationGarden
 sudo mkdir -p /var/backups/celebration-garden
 
 # Set permissions
@@ -90,9 +89,11 @@ echo "✅ Setup script completed!"
 echo ""
 echo "📝 Next steps:"
 echo "1. Set up PostgreSQL database (see commands above)"
-echo "2. Clone your repositories to /var/www/"
+echo "2. Clone your repository directly to /var/www/CelebrationGarden:"
+echo "   cd /var/www"
+echo "   git clone YOUR_REPO_URL CelebrationGarden"
 echo "3. Configure environment variables"
-echo "4. Run deployment scripts"
+echo "4. Run deployment scripts from /var/www/CelebrationGarden"
 echo ""
-echo "For detailed instructions, see: deployment/DEPLOYMENT_GUIDE.md"
+echo "For detailed instructions, see: deployment/docs/DEPLOYMENT_GUIDE.md"
 

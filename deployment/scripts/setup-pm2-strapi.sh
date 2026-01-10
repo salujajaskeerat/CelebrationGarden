@@ -60,36 +60,43 @@ echo "{\"location\":\"setup-pm2-strapi.sh:50\",\"message\":\"After cd to STRAPI_
 # Check locations in order of likelihood
 # #region agent log
 DEBUG_LOG="/tmp/pm2-setup-debug.log"
-CHECK1="$SCRIPT_DIR/pm2-ecosystem.config.js"
-CHECK2="$HOME/CelebrationGarden/deployment/pm2-ecosystem.config.js"
-CHECK3="./deployment/pm2-ecosystem.config.js"
-CHECK4="./pm2-ecosystem.config.js"
+CHECK1="$SCRIPT_DIR/../config/pm2-ecosystem.config.js"
+CHECK2="/var/www/CelebrationGarden/deployment/config/pm2-ecosystem.config.js"
+CHECK3="$HOME/CelebrationGarden/deployment/config/pm2-ecosystem.config.js"
+CHECK4="./deployment/config/pm2-ecosystem.config.js"
+CHECK5="./pm2-ecosystem.config.js"
 echo "{\"location\":\"setup-pm2-strapi.sh:57\",\"message\":\"Checking PM2 config locations\",\"data\":{\"CHECK1\":\"$CHECK1\",\"CHECK1_EXISTS\":\"$([ -f \"$CHECK1\" ] && echo true || echo false)\",\"CHECK2\":\"$CHECK2\",\"CHECK2_EXISTS\":\"$([ -f \"$CHECK2\" ] && echo true || echo false)\",\"CHECK3\":\"$CHECK3\",\"CHECK3_EXISTS\":\"$([ -f \"$CHECK3\" ] && echo true || echo false)\",\"CHECK4\":\"$CHECK4\",\"CHECK4_EXISTS\":\"$([ -f \"$CHECK4\" ] && echo true || echo false)\",\"CURRENT_PWD\":\"$(pwd)\",\"HOME\":\"$HOME\",\"USER\":\"$USER\"},\"timestamp\":$(date +%s),\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"B\"}" >> "$DEBUG_LOG" 2>/dev/null || true
 # #endregion
 
-if [ -f "$SCRIPT_DIR/pm2-ecosystem.config.js" ]; then
-    # If script is in deployment directory, config should be there too
-    PM2_CONFIG="$SCRIPT_DIR/pm2-ecosystem.config.js"
+if [ -f "$SCRIPT_DIR/../config/pm2-ecosystem.config.js" ]; then
+    # Config is in deployment/config/ relative to scripts/
+    PM2_CONFIG="$SCRIPT_DIR/../config/pm2-ecosystem.config.js"
     # #region agent log
     echo "{\"location\":\"setup-pm2-strapi.sh:62\",\"message\":\"Found config at CHECK1\",\"data\":{\"PM2_CONFIG\":\"$PM2_CONFIG\"},\"timestamp\":$(date +%s),\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\"}" >> "$DEBUG_LOG" 2>/dev/null || true
     # #endregion
-elif [ -f "$HOME/CelebrationGarden/deployment/pm2-ecosystem.config.js" ]; then
-    # Check home directory (using $HOME instead of ~)
-    PM2_CONFIG="$HOME/CelebrationGarden/deployment/pm2-ecosystem.config.js"
+elif [ -f "/var/www/CelebrationGarden/deployment/config/pm2-ecosystem.config.js" ]; then
+    # Absolute path to config
+    PM2_CONFIG="/var/www/CelebrationGarden/deployment/config/pm2-ecosystem.config.js"
     # #region agent log
     echo "{\"location\":\"setup-pm2-strapi.sh:67\",\"message\":\"Found config at CHECK2\",\"data\":{\"PM2_CONFIG\":\"$PM2_CONFIG\"},\"timestamp\":$(date +%s),\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"B\"}" >> "$DEBUG_LOG" 2>/dev/null || true
     # #endregion
+elif [ -f "$HOME/CelebrationGarden/deployment/config/pm2-ecosystem.config.js" ]; then
+    # Check home directory (using $HOME instead of ~)
+    PM2_CONFIG="$HOME/CelebrationGarden/deployment/config/pm2-ecosystem.config.js"
+    # #region agent log
+    echo "{\"location\":\"setup-pm2-strapi.sh:72\",\"message\":\"Found config at CHECK3\",\"data\":{\"PM2_CONFIG\":\"$PM2_CONFIG\"},\"timestamp\":$(date +%s),\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"C\"}" >> "$DEBUG_LOG" 2>/dev/null || true
+    # #endregion
+elif [ -f "./deployment/config/pm2-ecosystem.config.js" ]; then
+    # Try relative path from project root
+    PM2_CONFIG="./deployment/config/pm2-ecosystem.config.js"
+    # #region agent log
+    echo "{\"location\":\"setup-pm2-strapi.sh:77\",\"message\":\"Found config at CHECK4\",\"data\":{\"PM2_CONFIG\":\"$PM2_CONFIG\",\"RESOLVED\":\"$(readlink -f \"$PM2_CONFIG\" 2>/dev/null || realpath \"$PM2_CONFIG\" 2>/dev/null || echo \"$PM2_CONFIG\")\"},\"timestamp\":$(date +%s),\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"D\"}" >> "$DEBUG_LOG" 2>/dev/null || true
+    # #endregion
 elif [ -f "./pm2-ecosystem.config.js" ]; then
-    # Try current directory (we're in STRAPI_DIR, but this might be deployment if run from there)
+    # Try current directory (fallback)
     PM2_CONFIG="./pm2-ecosystem.config.js"
     # #region agent log
-    echo "{\"location\":\"setup-pm2-strapi.sh:72\",\"message\":\"Found config at CHECK4 (current dir)\",\"data\":{\"PM2_CONFIG\":\"$PM2_CONFIG\",\"RESOLVED\":\"$(readlink -f \"$PM2_CONFIG\" 2>/dev/null || realpath \"$PM2_CONFIG\" 2>/dev/null || echo \"$PM2_CONFIG\")\"},\"timestamp\":$(date +%s),\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"D\"}" >> "$DEBUG_LOG" 2>/dev/null || true
-    # #endregion
-elif [ -f "./deployment/pm2-ecosystem.config.js" ]; then
-    # Try relative path
-    PM2_CONFIG="./deployment/pm2-ecosystem.config.js"
-    # #region agent log
-    echo "{\"location\":\"setup-pm2-strapi.sh:77\",\"message\":\"Found config at CHECK3\",\"data\":{\"PM2_CONFIG\":\"$PM2_CONFIG\",\"RESOLVED\":\"$(readlink -f \"$PM2_CONFIG\" 2>/dev/null || realpath \"$PM2_CONFIG\" 2>/dev/null || echo \"$PM2_CONFIG\")\"},\"timestamp\":$(date +%s),\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"C\"}" >> "$DEBUG_LOG" 2>/dev/null || true
+    echo "{\"location\":\"setup-pm2-strapi.sh:82\",\"message\":\"Found config at CHECK5 (current dir)\",\"data\":{\"PM2_CONFIG\":\"$PM2_CONFIG\",\"RESOLVED\":\"$(readlink -f \"$PM2_CONFIG\" 2>/dev/null || realpath \"$PM2_CONFIG\" 2>/dev/null || echo \"$PM2_CONFIG\")\"},\"timestamp\":$(date +%s),\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"E\"}" >> "$DEBUG_LOG" 2>/dev/null || true
     # #endregion
 else
     # #region agent log
@@ -97,10 +104,11 @@ else
     # #endregion
     echo -e "${RED}❌ Error: PM2 config file not found${NC}"
     echo "   Searched locations:"
-    echo "   - $SCRIPT_DIR/pm2-ecosystem.config.js"
-    echo "   - $HOME/CelebrationGarden/deployment/pm2-ecosystem.config.js"
+    echo "   - $SCRIPT_DIR/../config/pm2-ecosystem.config.js"
+    echo "   - /var/www/CelebrationGarden/deployment/config/pm2-ecosystem.config.js"
+    echo "   - $HOME/CelebrationGarden/deployment/config/pm2-ecosystem.config.js"
+    echo "   - ./deployment/config/pm2-ecosystem.config.js"
     echo "   - ./pm2-ecosystem.config.js"
-    echo "   - ./deployment/pm2-ecosystem.config.js"
     echo ""
     echo "   Debug log saved to: $DEBUG_LOG"
     echo "   To view debug log: cat $DEBUG_LOG"

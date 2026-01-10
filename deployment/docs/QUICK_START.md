@@ -17,66 +17,74 @@ This is a condensed version of the full deployment guide. For detailed instructi
 # SSH into your EC2 instance
 ssh -i your-key.pem ubuntu@your-ec2-ip
 
-# Clone repository
-git clone your-repo-url
-cd CelebrationGarden
-
-# Run setup script
-chmod +x deployment/*.sh
-./deployment/ec2-setup.sh
+# Run initial setup script (installs Node.js, PostgreSQL, Nginx, PM2)
+cd /var/www
+sudo mkdir -p /var/www
+sudo chown -R $USER:$USER /var/www
+# Download and run ec2-setup.sh from your repo, or run:
+# (The script will be available after cloning in step 2)
 ```
 
-### 2. Database Setup (1 minute)
+### 2. Clone Repository (1 minute)
 
 ```bash
-cd deployment
+# Clone directly to /var/www/CelebrationGarden
+cd /var/www
+git clone YOUR_REPO_URL CelebrationGarden
+cd CelebrationGarden
+
+# Make scripts executable
+chmod +x deployment/scripts/*.sh
+
+# Run initial setup (if not done in step 1)
+./deployment/scripts/ec2-setup.sh
+```
+
+### 3. Database Setup (1 minute)
+
+```bash
+cd /var/www/CelebrationGarden/deployment/scripts
 ./setup-postgres.sh
 # Enter and confirm database password
 ```
 
-### 3. Deploy Applications (2 minutes)
+### 4. Deploy Applications (2 minutes)
 
 ```bash
-# Strapi
-cd /var/www
-git clone your-strapi-repo celebration-garden-cms
-cd celebration-garden-cms
-npm install
-npm install pg
-cp ../CelebrationGarden/deployment/env-strapi-template.txt .env
+# Configure Strapi
+cd /var/www/CelebrationGarden/backend/celebration-garden-cms
+cp ../../deployment/config/env-strapi-template.txt .env
 nano .env  # Update DATABASE_PASSWORD and generate security keys
+npm install
 npm run build
 
-# Next.js
-cd /var/www
-git clone your-nextjs-repo celebration-garden
-cd celebration-garden
-npm install
-cp ../CelebrationGarden/deployment/env-nextjs-template.txt .env.production
+# Configure Next.js
+cd /var/www/CelebrationGarden/frontend
+cp ../deployment/config/env-nextjs-template.txt .env.production
 nano .env.production  # Update Strapi URL
+npm install
 npm run build
 ```
 
-### 4. Start with PM2 (30 seconds)
+### 5. Start with PM2 (30 seconds)
 
 ```bash
-cd /var/www
-cp CelebrationGarden/deployment/pm2-ecosystem.config.js .
-pm2 start pm2-ecosystem.config.js
-pm2 save
-pm2 startup  # Follow the command it outputs
+cd /var/www/CelebrationGarden
+./deployment/scripts/setup-pm2-strapi.sh
+# Follow the PM2 startup command it outputs
 ```
 
-### 5. Configure Nginx (1 minute)
+### 6. Configure Nginx (1 minute)
 
 ```bash
 # Strapi
-sudo cp CelebrationGarden/deployment/nginx-strapi.conf /etc/nginx/sites-available/strapi
+cd /var/www/CelebrationGarden
+sudo cp deployment/config/nginx-strapi.conf /etc/nginx/sites-available/strapi
 sudo nano /etc/nginx/sites-available/strapi  # Update domain
 sudo ln -s /etc/nginx/sites-available/strapi /etc/nginx/sites-enabled/
 
 # Next.js
-sudo cp CelebrationGarden/deployment/nginx-nextjs.conf /etc/nginx/sites-available/celebration-garden
+sudo cp deployment/config/nginx-nextjs.conf /etc/nginx/sites-available/celebration-garden
 sudo nano /etc/nginx/sites-available/celebration-garden  # Update domain
 sudo ln -s /etc/nginx/sites-available/celebration-garden /etc/nginx/sites-enabled/
 
@@ -86,7 +94,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-### 6. SSL Setup (Optional, 2 minutes)
+### 7. SSL Setup (Optional, 2 minutes)
 
 ```bash
 sudo certbot --nginx -d api.yourdomain.com
@@ -116,10 +124,11 @@ pm2 logs
 pm2 restart all
 
 # Backup database
-/var/www/CelebrationGarden/deployment/backup-database.sh
+/var/www/CelebrationGarden/deployment/scripts/backup-database.sh
 
-# Update application
-cd /var/www/celebration-garden && git pull && npm install && npm run build && pm2 restart nextjs
+# Update application (after pushing new commits)
+cd /var/www/CelebrationGarden
+./deployment/scripts/deploy-update.sh
 ```
 
 ## Troubleshooting
