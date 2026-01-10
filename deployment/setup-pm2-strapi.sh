@@ -33,7 +33,7 @@ echo -e "${GREEN}✅ Log directory created${NC}"
 echo ""
 
 # Check if we're in the right directory
-STRAPI_DIR="/var/www/celebration-garden-cms"
+STRAPI_DIR="/var/www/CelebrationGarden/backend/celebration-garden-cms"
 if [ ! -d "$STRAPI_DIR" ]; then
     echo -e "${RED}❌ Error: Strapi directory not found at $STRAPI_DIR${NC}"
     exit 1

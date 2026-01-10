@@ -6,7 +6,7 @@ module.exports = {
   apps: [
     {
       name: 'strapi',
-      cwd: '/var/www/celebration-garden-cms',
+      cwd: '/var/www/CelebrationGarden/backend/celebration-garden-cms',
       script: 'npm',
       args: 'start',
       env: {
@@ -24,7 +24,7 @@ module.exports = {
     },
     {
       name: 'nextjs',
-      cwd: '/var/www/celebration-garden',
+      cwd: '/var/www/CelebrationGarden/frontend',
       script: 'npm',
       args: 'start',
       env: {

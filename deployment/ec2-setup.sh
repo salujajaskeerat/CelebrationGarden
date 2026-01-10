@@ -63,13 +63,12 @@ echo ""
 
 # Create application directories
 echo "📁 Creating application directories..."
-sudo mkdir -p /var/www/celebration-garden
-sudo mkdir -p /var/www/celebration-garden-cms
+sudo mkdir -p /var/www/CelebrationGarden/backend
+sudo mkdir -p /var/www/CelebrationGarden/frontend
 sudo mkdir -p /var/backups/celebration-garden
 
 # Set permissions
-sudo chown -R $USER:$USER /var/www/celebration-garden
-sudo chown -R $USER:$USER /var/www/celebration-garden-cms
+sudo chown -R $USER:$USER /var/www/CelebrationGarden
 sudo chown -R $USER:$USER /var/backups/celebration-garden
 
 echo "✅ Directories created"

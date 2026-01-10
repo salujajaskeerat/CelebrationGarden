@@ -27,3 +27,9 @@ JWT_SECRET=your-jwt-secret-here
 DATABASE_POOL_MIN=2
 DATABASE_POOL_MAX=10
 
+# Cloudinary Configuration (Media Storage)
+# Get these from https://cloudinary.com/console
+CLOUDINARY_NAME=your-cloudinary-cloud-name
+CLOUDINARY_KEY=your-cloudinary-api-key
+CLOUDINARY_SECRET=your-cloudinary-api-secret
+CLOUDINARY_FOLDER=celebration-garden

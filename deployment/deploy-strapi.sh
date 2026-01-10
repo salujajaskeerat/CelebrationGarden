@@ -16,8 +16,8 @@ NC='\033[0m' # No Color
 # Configuration
 EC2_HOST="celebration-garden"
 EC2_USER="ubuntu"
-EC2_PATH="/var/www/celebration-garden-cms"
-CMS_DIR="celebration-garden-cms"
+EC2_PATH="/var/www/CelebrationGarden/backend/celebration-garden-cms"
+CMS_DIR="backend/celebration-garden-cms"
 SSH_KEY="~/.ssh/CelebrationGarden.pem"
 
 echo -e "${GREEN}🚀 Starting Strapi CMS Deployment...${NC}"
@@ -119,10 +119,10 @@ SSH_KEY_EXPANDED=$(eval echo "$SSH_KEY")
 
 ssh -i "$SSH_KEY_EXPANDED" "$EC2_USER@$EC2_HOST" << 'ENDSSH'
     # Create directory if it doesn't exist
-    sudo mkdir -p /var/www/celebration-garden-cms
+    sudo mkdir -p /var/www/CelebrationGarden/backend/celebration-garden-cms
     
     # Fix ownership
-    sudo chown -R $USER:$USER /var/www/celebration-garden-cms
+    sudo chown -R $USER:$USER /var/www/CelebrationGarden
     
     echo "✅ Permissions fixed"
 ENDSSH
@@ -169,7 +169,7 @@ echo ""
 # Step 7: Install production dependencies on server
 echo -e "${YELLOW}📦 Installing production dependencies on server...${NC}"
 ssh -i "$SSH_KEY_EXPANDED" "$EC2_USER@$EC2_HOST" << 'ENDSSH'
-    cd /var/www/celebration-garden-cms
+    cd /var/www/CelebrationGarden/backend/celebration-garden-cms
     
     # Install production dependencies
     npm install --production
