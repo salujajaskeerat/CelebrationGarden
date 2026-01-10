@@ -47,7 +47,7 @@ This installs:
 ### Step 2: Database Setup
 
 ```bash
-cd /var/www/CelebrationGarden/deployment/scripts
+cd /var/www/CelebrationGarden/deployment
 ./setup-postgres.sh
 # Enter and confirm database password
 ```
@@ -57,7 +57,7 @@ cd /var/www/CelebrationGarden/deployment/scripts
 **Strapi Backend:**
 ```bash
 cd /var/www/CelebrationGarden/backend/celebration-garden-cms
-cp ../../deployment/config/env-strapi-template.txt .env
+cp ../../deployment/env-strapi-template.txt .env
 nano .env
 # Update:
 # - DATABASE_PASSWORD
@@ -68,7 +68,7 @@ nano .env
 **Next.js Frontend:**
 ```bash
 cd /var/www/CelebrationGarden/frontend
-cp ../deployment/config/env-nextjs-template.txt .env.production
+cp ../deployment/env-nextjs-template.txt .env.production
 nano .env.production
 # Update:
 # - STRAPI_API_URL
@@ -95,7 +95,7 @@ npm run build
 
 ```bash
 cd /var/www/CelebrationGarden
-./deployment/scripts/setup-pm2-strapi.sh
+./deployment/setup-pm2-strapi.sh
 # Follow the PM2 startup command it outputs
 ```
 
@@ -105,12 +105,12 @@ cd /var/www/CelebrationGarden
 cd /var/www/CelebrationGarden
 
 # Strapi API
-sudo cp deployment/config/nginx-strapi.conf /etc/nginx/sites-available/strapi
+sudo cp deployment/nginx-strapi.conf /etc/nginx/sites-available/strapi
 sudo nano /etc/nginx/sites-available/strapi  # Update domain
 sudo ln -s /etc/nginx/sites-available/strapi /etc/nginx/sites-enabled/
 
 # Next.js Frontend
-sudo cp deployment/config/nginx-nextjs.conf /etc/nginx/sites-available/celebration-garden
+sudo cp deployment/nginx-nextjs.conf /etc/nginx/sites-available/celebration-garden
 sudo nano /etc/nginx/sites-available/celebration-garden  # Update domain
 sudo ln -s /etc/nginx/sites-available/celebration-garden /etc/nginx/sites-enabled/
 
@@ -132,7 +132,7 @@ ssh -i your-key.pem ubuntu@your-ec2-ip
 cd /var/www/CelebrationGarden
 
 # Run the update script
-./deployment/scripts/deploy-update.sh
+./deployment/deploy-update.sh
 ```
 
 This script will:

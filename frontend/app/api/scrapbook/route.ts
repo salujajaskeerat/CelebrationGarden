@@ -15,13 +15,14 @@ export async function POST(request: NextRequest) {
     
     const name = formData.get('name') as string;
     const message = formData.get('message') as string;
-    const phone = formData.get('phone') as string | null;
+    const phone = formData.get('phone') as string;
+    const relation = formData.get('relation') as string;
     const invitationSlug = formData.get('invitationSlug') as string;
-    const photo = formData.get('photo') as File | null;
+    const imageUrl = formData.get('imageUrl') as string | null; // Cloudinary URL from client
 
-    if (!name || !message || !invitationSlug) {
+    if (!name || !message || !phone || !relation || !invitationSlug) {
       return NextResponse.json(
-        { error: 'Name, message, and invitation slug are required' },
+        { error: 'Name, message, phone, relation, and invitation slug are required' },
         { status: 400 }
       );
     }
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     // First, get the invitation ID from Strapi
     const invitationResponse = await fetchStrapi<{
       data: { id: number } | { id: number }[] | null;
-    }>(`/invitation?filters[slug][$eq]=${encodeURIComponent(invitationSlug)}`);
+    }>(`/invitations?filters[slug][$eq]=${encodeURIComponent(invitationSlug)}`);
 
     if (!invitationResponse.data) {
       return NextResponse.json(
@@ -42,69 +43,70 @@ export async function POST(request: NextRequest) {
       ? invitationResponse.data[0] 
       : invitationResponse.data;
 
-    // Upload photo directly to Cloudinary with low resolution optimization
-    let cloudinaryImageUrl: string | null = null;
-    if (photo && photo.size > 0) {
+    if (!invitation.id) {
+      return NextResponse.json(
+        { error: 'Invitation ID not found' },
+        { status: 500 }
+      );
+    }
+
+    // Image is already uploaded to Cloudinary by the client
+    // Create a Strapi media entry so it shows up in admin panel for easy viewing/management
+    let photoId: number | null = null;
+    if (imageUrl) {
       try {
-        const cloudName = process.env.CLOUDINARY_NAME;
-        const apiKey = process.env.CLOUDINARY_KEY;
-        const apiSecret = process.env.CLOUDINARY_API_SECRET;
+        // Fetch the image from Cloudinary
+        const imageResponse = await fetch(imageUrl);
+        if (imageResponse.ok) {
+          // Convert to blob
+          const imageBlob = await imageResponse.blob();
+          
+          // Create FormData for Strapi upload
+          const uploadFormData = new FormData();
+          uploadFormData.append('files', imageBlob, 'scrapbook-image.jpg');
+          uploadFormData.append('ref', 'api::scrapbook-entry.scrapbook-entry');
+          uploadFormData.append('field', 'image');
 
-        if (!cloudName || !apiKey || !apiSecret) {
-          console.error('Cloudinary credentials not configured');
-          return NextResponse.json(
-            { error: 'Image upload service not configured' },
-            { status: 500 }
-          );
-        }
-
-        // Convert File to base64 data URI for Cloudinary upload
-        const arrayBuffer = await photo.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const base64Image = buffer.toString('base64');
-        const dataUri = `data:${photo.type};base64,${base64Image}`;
-
-        // Create form data for Cloudinary upload
-        // Use unsigned upload with upload_preset (recommended for server-side)
-        const cloudinaryFormData = new FormData();
-        cloudinaryFormData.append('file', dataUri);
-        cloudinaryFormData.append('upload_preset', process.env.CLOUDINARY_UPLOAD_PRESET || 'ml_default');
-        cloudinaryFormData.append('folder', `${process.env.CLOUDINARY_FOLDER || 'celebration-garden'}/scrapbook`);
-        // Low resolution optimization settings - applied as transformation parameter
-        // q_auto:low = automatic low quality, f_auto = auto format, w_800/h_800 = max dimensions, c_limit = don't crop
-        cloudinaryFormData.append('transformation', 'q_auto:low,f_auto,w_800,h_800,c_limit');
-
-        const cloudinaryResponse = await fetch(
-          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-          {
+          // Upload to Strapi media library (Strapi will handle Cloudinary storage via its provider)
+          const uploadResponse = await fetch(`${strapiUrl}/api/upload`, {
             method: 'POST',
-            body: cloudinaryFormData,
-          }
-        );
+            headers: {
+              'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN || ''}`,
+            },
+            body: uploadFormData,
+          });
 
-        if (cloudinaryResponse.ok) {
-          const cloudinaryData = await cloudinaryResponse.json();
-          cloudinaryImageUrl = cloudinaryData.secure_url || cloudinaryData.url;
-        } else {
-          const errorText = await cloudinaryResponse.text();
-          console.error('Cloudinary upload failed:', errorText);
+          if (uploadResponse.ok) {
+            const uploadData = await uploadResponse.json();
+            if (Array.isArray(uploadData) && uploadData.length > 0) {
+              photoId = uploadData[0].id;
+            } else if (uploadData.id) {
+              photoId = uploadData.id;
+            }
+            console.log('Image added to Strapi media library:', photoId);
+          } else {
+            const errorText = await uploadResponse.text();
+            console.warn('Failed to add image to Strapi media library:', errorText);
+            // Continue without media entry - image URL is still stored
+          }
         }
       } catch (error) {
-        console.error('Error uploading to Cloudinary:', error);
-        // Continue without image if upload fails
+        console.warn('Error creating Strapi media entry:', error);
+        // Continue without media entry - image URL is still stored as backup
       }
     }
 
     // Create scrapbook entry in Strapi
-    // Store image URL as text field (since we're storing Cloudinary URL directly)
     const entryData: any = {
       data: {
         name,
         message,
-        phone: phone || null,
+        phone,
+        relation,
         invitation: invitation.id,
         submitted_at: new Date().toISOString(),
-        ...(cloudinaryImageUrl && { image: cloudinaryImageUrl }), // Store Cloudinary URL
+        ...(photoId && { image: photoId }), // Link to Strapi media entry (shows preview in admin)
+        ...(imageUrl && { image_url: imageUrl }), // Also store URL as backup/reference
       },
     };
 
@@ -158,7 +160,7 @@ export async function GET(request: NextRequest) {
     // Get invitation ID
     const invitationResponse = await fetchStrapi<{
       data: { id: number } | { id: number }[] | null;
-    }>(`/invitation?filters[slug][$eq]=${encodeURIComponent(invitationSlug)}`);
+    }>(`/invitations?filters[slug][$eq]=${encodeURIComponent(invitationSlug)}`);
 
     if (!invitationResponse.data) {
       return NextResponse.json(
@@ -171,10 +173,10 @@ export async function GET(request: NextRequest) {
       ? invitationResponse.data[0] 
       : invitationResponse.data;
 
-    // Fetch scrapbook entries
+    // Fetch scrapbook entries with image populated
     const entriesResponse = await fetchStrapi<{
       data: any[] | null;
-    }>(`/scrapbook-entries?filters[invitation][id][$eq]=${invitation.id}&populate=photo`);
+    }>(`/scrapbook-entries?filters[invitation][id][$eq]=${invitation.id}&populate=image`);
 
     return NextResponse.json({
       success: true,

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
         event_date: string;
         type: string;
       }> | null;
-    }>('/invitation?sort=event_date:desc');
+    }>('/invitations?sort=event_date:desc');
 
     if (!invitationsResponse.data) {
       return NextResponse.json({ success: true, data: [] });

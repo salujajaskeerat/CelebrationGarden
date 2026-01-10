@@ -95,5 +95,5 @@ echo "   git clone YOUR_REPO_URL CelebrationGarden"
 echo "3. Configure environment variables"
 echo "4. Run deployment scripts from /var/www/CelebrationGarden"
 echo ""
-echo "For detailed instructions, see: deployment/docs/DEPLOYMENT_GUIDE.md"
+echo "For detailed instructions, see: deployment/DEPLOYMENT_GUIDE.md"
 

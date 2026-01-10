@@ -34,16 +34,16 @@ git clone YOUR_REPO_URL CelebrationGarden
 cd CelebrationGarden
 
 # Make scripts executable
-chmod +x deployment/scripts/*.sh
+chmod +x deployment/*.sh
 
 # Run initial setup (if not done in step 1)
-./deployment/scripts/ec2-setup.sh
+./deployment/ec2-setup.sh
 ```
 
 ### 3. Database Setup (1 minute)
 
 ```bash
-cd /var/www/CelebrationGarden/deployment/scripts
+cd /var/www/CelebrationGarden/deployment
 ./setup-postgres.sh
 # Enter and confirm database password
 ```
@@ -53,14 +53,14 @@ cd /var/www/CelebrationGarden/deployment/scripts
 ```bash
 # Configure Strapi
 cd /var/www/CelebrationGarden/backend/celebration-garden-cms
-cp ../../deployment/config/env-strapi-template.txt .env
+cp ../../deployment/env-strapi-template.txt .env
 nano .env  # Update DATABASE_PASSWORD and generate security keys
 npm install
 npm run build
 
 # Configure Next.js
 cd /var/www/CelebrationGarden/frontend
-cp ../deployment/config/env-nextjs-template.txt .env.production
+cp ../deployment/env-nextjs-template.txt .env.production
 nano .env.production  # Update Strapi URL
 npm install
 npm run build
@@ -70,7 +70,7 @@ npm run build
 
 ```bash
 cd /var/www/CelebrationGarden
-./deployment/scripts/setup-pm2-strapi.sh
+./deployment/setup-pm2-strapi.sh
 # Follow the PM2 startup command it outputs
 ```
 
@@ -79,12 +79,12 @@ cd /var/www/CelebrationGarden
 ```bash
 # Strapi
 cd /var/www/CelebrationGarden
-sudo cp deployment/config/nginx-strapi.conf /etc/nginx/sites-available/strapi
+sudo cp deployment/nginx-strapi.conf /etc/nginx/sites-available/strapi
 sudo nano /etc/nginx/sites-available/strapi  # Update domain
 sudo ln -s /etc/nginx/sites-available/strapi /etc/nginx/sites-enabled/
 
 # Next.js
-sudo cp deployment/config/nginx-nextjs.conf /etc/nginx/sites-available/celebration-garden
+sudo cp deployment/nginx-nextjs.conf /etc/nginx/sites-available/celebration-garden
 sudo nano /etc/nginx/sites-available/celebration-garden  # Update domain
 sudo ln -s /etc/nginx/sites-available/celebration-garden /etc/nginx/sites-enabled/
 
@@ -124,11 +124,11 @@ pm2 logs
 pm2 restart all
 
 # Backup database
-/var/www/CelebrationGarden/deployment/scripts/backup-database.sh
+/var/www/CelebrationGarden/deployment/backup-database.sh
 
 # Update application (after pushing new commits)
 cd /var/www/CelebrationGarden
-./deployment/scripts/deploy-update.sh
+./deployment/deploy-update.sh
 ```
 
 ## Troubleshooting

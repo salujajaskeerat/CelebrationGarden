@@ -16,5 +16,8 @@ export default {
    * This gives you an opportunity to set up your data model,
    * run jobs, or perform some special logic.
    */
-  bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {},
+  bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {
+    // Note: Permissions should be set manually in Strapi Admin:
+    // Settings → Users & Permissions → Roles → Public → Enable find & findOne for Invitation
+  },
 };

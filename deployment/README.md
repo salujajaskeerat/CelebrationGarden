@@ -35,16 +35,14 @@ deployment/
 
 ## Quick Start
 
-**⭐ Recommended for Low-RAM EC2 (Local Builds):**
-1. Read `docs/LOCAL_BUILD_WORKFLOW.md` - Build locally, deploy to EC2
-2. Use `scripts/deploy-all.sh` to deploy both applications
-3. No building happens on EC2 - perfect for t2.micro instances
-
-**Alternative (Build on EC2):**
+**Recommended Workflow (Clone to /var/www):**
 1. Read `docs/DEPLOYMENT_WORKFLOW.md` for the streamlined workflow
 2. Clone directly to `/var/www/CelebrationGarden` using `scripts/initial-clone.sh`
 3. For updates, use `scripts/deploy-update.sh` after pushing commits
-4. **Note**: Requires sufficient RAM on EC2 for building
+
+**Alternative:**
+1. Read `docs/QUICK_START.md` for a fast deployment
+2. Or follow `docs/DEPLOYMENT_GUIDE.md` for detailed instructions
 
 ## Scripts Overview
 
@@ -53,11 +51,9 @@ deployment/
 - **`scripts/initial-clone.sh`** - Clone repository directly to /var/www/CelebrationGarden
 
 ### Deployment
-- **`scripts/deploy-all.sh`** - **Recommended** Deploy both Strapi and Next.js (builds locally)
-- **`scripts/deploy-strapi.sh`** - Deploy Strapi only (builds locally, perfect for low-RAM EC2)
-- **`scripts/deploy-nextjs.sh`** - Deploy Next.js only (builds locally, perfect for low-RAM EC2)
-- **`scripts/deploy-update.sh`** - Quick update script (git pull + restart services) - **Requires building on EC2**
+- **`scripts/deploy-update.sh`** - Quick update script (git pull + restart services)
 - **`scripts/setup-pm2-strapi.sh`** - Set up PM2 for Strapi and Next.js
+- **`scripts/deploy-strapi.sh`** - Legacy deployment script (builds locally, deploys to EC2)
 
 ### Database
 - **`scripts/setup-postgres.sh`** - PostgreSQL database and user creation
@@ -78,8 +74,7 @@ deployment/
 
 ## Documentation
 
-- **`docs/LOCAL_BUILD_WORKFLOW.md`** - **⭐ Recommended for low-RAM EC2** Build locally, deploy to EC2
-- **`docs/DEPLOYMENT_WORKFLOW.md`** - Streamlined workflow (clone to /var/www, build on EC2)
+- **`docs/DEPLOYMENT_WORKFLOW.md`** - **NEW** Streamlined workflow (clone to /var/www)
 - **`docs/DEPLOYMENT_GUIDE.md`** - Complete step-by-step deployment guide
 - **`docs/QUICK_START.md`** - Condensed quick start guide
 - **`docs/TROUBLESHOOTING.md`** - Common issues and solutions
@@ -122,18 +117,6 @@ chmod +x deployment/scripts/*.sh
 ```
 
 ### Update After Commits
-
-**Option 1: Local Build (Recommended for Low-RAM EC2)**
-```bash
-# On Local Machine
-cd /path/to/CelebrationGarden
-./deployment/scripts/deploy-all.sh
-
-# On EC2: Restart services
-pm2 restart all
-```
-
-**Option 2: Build on EC2 (Requires Sufficient RAM)**
 ```bash
 # On EC2
 cd /var/www/CelebrationGarden

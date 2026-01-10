@@ -1,69 +1,63 @@
 {
-  "kind": "singleType",
+  "kind": "collectionType",
   "collectionName": "invitations",
   "info": {
     "singularName": "invitation",
     "pluralName": "invitations",
-    "displayName": "Invitation"
+    "displayName": "Invitation",
+    "description": "Invitation content for Celebration Garden events"
   },
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {
-    "i18n": {
-      "localized": true
-    }
-  },
+  "pluginOptions": {},
   "attributes": {
     "slug": {
-      "type": "uid",
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "required": true
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "minLength": 1,
+      "maxLength": 255
     },
     "event_date": {
       "type": "datetime",
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
       "required": true
     },
     "type": {
       "type": "enumeration",
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
       "required": true,
       "default": "Wedding",
       "enum": [
         "Wedding",
-        "Party",
-        "Celebration"
+        "Corporate",
+        "Birthday",
+        "Social"
       ]
     },
     "title": {
       "type": "string",
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
       "required": true
     },
     "subtitle": {
       "type": "text",
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
+      "required": false
+    },
+    "time": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    },
+    "description": {
+      "type": "richtext",
+      "required": false
+    },
+    "hero_image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
     }
   }
 }
