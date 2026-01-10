@@ -15,12 +15,36 @@ export interface InvitationData {
   heroImage: string;
 }
 
-const Countdown: React.FC<{ targetDate: string }> = ({ targetDate }) => {
+const Countdown: React.FC<{ targetDate: string; targetTime?: string }> = ({ targetDate, targetTime }) => {
   const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0 });
 
   useEffect(() => {
     const calculateTime = () => {
-      const difference = +new Date(targetDate) - +new Date();
+      // IST is UTC+5:30
+      const istOffsetMinutes = 5 * 60 + 30; // 330 minutes
+      
+      // Parse date and time, treating them as IST
+      let targetDateTime: Date;
+      
+      if (targetTime) {
+        // Combine date and time, treating as IST
+        const [hours, minutes] = targetTime.split(':').map(Number);
+        const dateParts = targetDate.split('-').map(Number);
+        // Create date string in IST format, then convert to UTC
+        // Create a date string that represents IST time
+        const istDateString = `${dateParts[0]}-${String(dateParts[1]).padStart(2, '0')}-${String(dateParts[2]).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00+05:30`;
+        targetDateTime = new Date(istDateString);
+      } else {
+        // If no time provided, use date at midnight IST
+        const dateParts = targetDate.split('-').map(Number);
+        const istDateString = `${dateParts[0]}-${String(dateParts[1]).padStart(2, '0')}-${String(dateParts[2]).padStart(2, '0')}T00:00:00+05:30`;
+        targetDateTime = new Date(istDateString);
+      }
+      
+      // Get current time
+      const now = new Date();
+      
+      const difference = targetDateTime.getTime() - now.getTime();
       if (difference > 0) {
         setTimeLeft({
           d: Math.floor(difference / (1000 * 60 * 60 * 24)),
@@ -28,12 +52,14 @@ const Countdown: React.FC<{ targetDate: string }> = ({ targetDate }) => {
           m: Math.floor((difference / 1000 / 60) % 60),
           s: Math.floor((difference / 1000) % 60),
         });
+      } else {
+        setTimeLeft({ d: 0, h: 0, m: 0, s: 0 });
       }
     };
     const timer = setInterval(calculateTime, 1000);
     calculateTime();
     return () => clearInterval(timer);
-  }, [targetDate]);
+  }, [targetDate, targetTime]);
 
   return (
     <div className="flex justify-center gap-4 md:gap-8 mt-12">
@@ -228,7 +254,7 @@ const ClientInvitation: React.FC<{ data: InvitationData }> = ({ data }) => {
             "{data.description}"
           </p>
 
-          <Countdown targetDate={data.date} />
+          <Countdown targetDate={data.date} targetTime={data.time} />
 
           <div className="mt-20 grid grid-cols-1 md:grid-cols-2 gap-16 text-left border-t border-gray-50 pt-16">
             <div className="space-y-4">

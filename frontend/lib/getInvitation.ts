@@ -42,9 +42,9 @@ interface StrapiInvitationResponse {
 
 export async function getInvitation(slug: string): Promise<InvitationData | null> {
   try {
-    // Fetch invitation from Strapi by slug using filter query
+    // Fetch invitation from Strapi by slug using filter query, populate hero_image
     const response = await fetchStrapi<StrapiInvitationResponse>(
-      `/invitation?filters[slug][$eq]=${encodeURIComponent(slug)}`
+      `/invitation?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=hero_image`
     );
 
     if (!response.data) {
@@ -83,8 +83,14 @@ export async function getInvitation(slug: string): Promise<InvitationData | null
       date: formatDate(invitationItem.event_date),
       time: invitationItem.time || '',
       description: invitationItem.description || '',
+      // Hero image from Cloudinary - Strapi with Cloudinary provider returns full URLs
+      // If URL doesn't start with http, it's a relative path and we need to check if it's Cloudinary
       heroImage: invitationItem.hero_image?.data?.attributes?.url 
-        ? `${strapiUrl}${invitationItem.hero_image.data.attributes.url}`
+        ? (invitationItem.hero_image.data.attributes.url.startsWith('http') 
+            ? invitationItem.hero_image.data.attributes.url 
+            : invitationItem.hero_image.data.attributes.url.includes('cloudinary.com')
+              ? `https://${invitationItem.hero_image.data.attributes.url.replace(/^\/+/, '')}`
+              : `${strapiUrl}${invitationItem.hero_image.data.attributes.url}`)
         : '',
     };
 
