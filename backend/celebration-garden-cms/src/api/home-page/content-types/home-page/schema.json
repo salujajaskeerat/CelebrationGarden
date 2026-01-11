@@ -1,0 +1,80 @@
+{
+  "kind": "singleType",
+  "collectionName": "home_pages",
+  "info": {
+    "singularName": "home-page",
+    "pluralName": "home-pages",
+    "displayName": "Home Page",
+    "description": "Home page content for Celebration Garden"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "hero_title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 255
+    },
+    "hero_subtitle": {
+      "type": "text",
+      "required": false
+    },
+    "hero_description": {
+      "type": "text",
+      "required": false
+    },
+    "hero_image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "about_text": {
+      "type": "text",
+      "required": true
+    },
+    "address_line1": {
+      "type": "string",
+      "required": true,
+      "maxLength": 255
+    },
+    "address_line2": {
+      "type": "string",
+      "required": false,
+      "maxLength": 255
+    },
+    "address_line3": {
+      "type": "string",
+      "required": false,
+      "maxLength": 255
+    },
+    "address_country": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "phone_number": {
+      "type": "string",
+      "required": true,
+      "maxLength": 50
+    },
+    "whatsapp_phone": {
+      "type": "string",
+      "required": true,
+      "maxLength": 50
+    },
+    "meta_title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 255
+    },
+    "meta_description": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

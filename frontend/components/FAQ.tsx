@@ -2,83 +2,98 @@
 
 import React, { useState } from 'react';
 
-interface FAQItem {
+export interface FAQItem {
   question: string;
   answer: string;
   category: string;
-  icon: React.ReactNode;
 }
 
-const FAQ: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState('General');
+interface FAQProps {
+  faqs?: FAQItem[];
+  categories?: string[];
+}
+
+// Icon mapping based on category
+const getCategoryIcon = (category: string) => {
+  const iconMap: Record<string, React.ReactNode> = {
+    'General': (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+    'Venue': (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+      </svg>
+    ),
+    'Catering': (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+      </svg>
+    ),
+    'Booking': (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+  };
+
+  return iconMap[category] || (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+};
+
+// Default FAQ data as fallback
+const defaultFaqs: FAQItem[] = [
+  {
+    category: 'General',
+    question: 'What is the maximum capacity of Celebration Garden?',
+    answer: 'Our Grand Pavilion can comfortably host up to 300 guests for a seated banquet, while our intimate Secret Rose Garden is ideal for ceremonies of up to 150 guests.',
+  },
+  {
+    category: 'General',
+    question: 'Is there on-site parking available for guests?',
+    answer: 'Yes, we provide complimentary valet parking for all guests. Our estate features a discreet, secure parking area with a capacity for 120 vehicles.',
+  },
+  {
+    category: 'Venue',
+    question: 'What happens if it rains on my wedding day?',
+    answer: 'Our Grand Pavilion serves as a breathtaking indoor backup for outdoor ceremonies. Its floor-to-ceiling glass ensures you still feel surrounded by the garden while staying perfectly dry.',
+  },
+  {
+    category: 'Venue',
+    question: 'Are we allowed to bring our own external vendors?',
+    answer: 'While we have a curated list of "Elite Partners," we do welcome outside vendors. They must be licensed, insured, and approved by our estate management team 60 days prior to the event.',
+  },
+  {
+    category: 'Catering',
+    question: 'Can you accommodate specific dietary requirements?',
+    answer: 'Absolutely. Our executive culinary team specializes in bespoke menus, including vegan, gluten-free, Kosher, and Halal options. We conduct personal tasting sessions for every couple.',
+  },
+  {
+    category: 'Booking',
+    question: 'What is your cancellation and rescheduling policy?',
+    answer: 'We offer a flexible rescheduling policy up to 9 months before your date. For cancellations, the initial reservation deposit is non-refundable, but can often be applied to a future date within 12 months.',
+  },
+];
+
+const defaultCategories = ['General', 'Venue', 'Catering', 'Booking'];
+
+const FAQ: React.FC<FAQProps> = ({ 
+  faqs = defaultFaqs,
+  categories = defaultCategories 
+}) => {
+  // Use provided categories or extract unique categories from FAQs
+  const availableCategories = categories.length > 0 
+    ? categories 
+    : Array.from(new Set(faqs.map(faq => faq.category)));
+  
+  const [activeCategory, setActiveCategory] = useState(availableCategories[0] || 'General');
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  const categories = ['General', 'Venue', 'Catering', 'Booking'];
-
-  const faqData: FAQItem[] = [
-    {
-      category: 'General',
-      question: 'What is the maximum capacity of Celebration Garden?',
-      answer: 'Our Grand Pavilion can comfortably host up to 300 guests for a seated banquet, while our intimate Secret Rose Garden is ideal for ceremonies of up to 150 guests.',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      )
-    },
-    {
-      category: 'General',
-      question: 'Is there on-site parking available for guests?',
-      answer: 'Yes, we provide complimentary valet parking for all guests. Our estate features a discreet, secure parking area with a capacity for 120 vehicles.',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-        </svg>
-      )
-    },
-    {
-      category: 'Venue',
-      question: 'What happens if it rains on my wedding day?',
-      answer: 'Our Grand Pavilion serves as a breathtaking indoor backup for outdoor ceremonies. Its floor-to-ceiling glass ensures you still feel surrounded by the garden while staying perfectly dry.',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-        </svg>
-      )
-    },
-    {
-      category: 'Venue',
-      question: 'Are we allowed to bring our own external vendors?',
-      answer: 'While we have a curated list of "Elite Partners," we do welcome outside vendors. They must be licensed, insured, and approved by our estate management team 60 days prior to the event.',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-      )
-    },
-    {
-      category: 'Catering',
-      question: 'Can you accommodate specific dietary requirements?',
-      answer: 'Absolutely. Our executive culinary team specializes in bespoke menus, including vegan, gluten-free, Kosher, and Halal options. We conduct personal tasting sessions for every couple.',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-        </svg>
-      )
-    },
-    {
-      category: 'Booking',
-      question: 'What is your cancellation and rescheduling policy?',
-      answer: 'We offer a flexible rescheduling policy up to 9 months before your date. For cancellations, the initial reservation deposit is non-refundable, but can often be applied to a future date within 12 months.',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      )
-    }
-  ];
-
-  const filteredFaqs = faqData.filter(faq => faq.category === activeCategory);
+  const filteredFaqs = faqs.filter(faq => faq.category === activeCategory);
 
   return (
     <section id="faq" className="py-24 md:py-32 bg-white overflow-hidden">
@@ -93,7 +108,7 @@ const FAQ: React.FC = () => {
 
         {/* Category Tabs */}
         <div className="flex flex-wrap justify-center gap-3 mb-12">
-          {categories.map((cat) => (
+          {availableCategories.map((cat) => (
             <button
               key={cat}
               onClick={() => {
@@ -113,7 +128,12 @@ const FAQ: React.FC = () => {
 
         {/* FAQ List */}
         <div className="space-y-4">
-          {filteredFaqs.map((faq, index) => (
+          {filteredFaqs.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-400">No FAQs available for this category.</p>
+            </div>
+          ) : (
+            filteredFaqs.map((faq, index) => (
             <div 
               key={index} 
               className={`border-b border-gray-100 last:border-0 transition-all duration-500`}
@@ -123,7 +143,7 @@ const FAQ: React.FC = () => {
                 className="w-full py-6 flex items-start text-left gap-6 group focus:outline-none"
               >
                 <div className={`w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center transition-all duration-300 ${openIndex === index ? 'bg-[#C5A059] text-white border-[#C5A059]' : 'text-[#064e3b] group-hover:bg-[#F9F8F3]'}`}>
-                  {faq.icon}
+                  {getCategoryIcon(faq.category)}
                 </div>
                 <div className="flex-grow pt-2">
                   <h3 className={`text-base font-semibold transition-colors duration-300 ${openIndex === index ? 'text-[#064e3b]' : 'text-gray-900 group-hover:text-[#064e3b]'}`}>
@@ -149,7 +169,8 @@ const FAQ: React.FC = () => {
                 </div>
               </button>
             </div>
-          ))}
+            ))
+          )}
         </div>
         
         {/* Help Bubble - Design element from image */}

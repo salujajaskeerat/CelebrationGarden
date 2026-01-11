@@ -1,7 +1,13 @@
 
 import React from 'react';
 
-const VenueIntro: React.FC = () => {
+interface VenueIntroProps {
+  aboutText?: string;
+}
+
+const VenueIntro: React.FC<VenueIntroProps> = ({ 
+  aboutText = "More than a venue—a living legacy. Spanning twenty acres of manicured emerald lawns and hidden groves, Celebration Garden is the definitive setting for life's most profound milestones."
+}) => {
   return (
     <section id="venue" className="py-24 md:py-32 bg-[#F9F8F3] overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
@@ -9,10 +15,11 @@ const VenueIntro: React.FC = () => {
           <p className="text-[#C5A059] font-bold tracking-[0.4em] uppercase text-[10px] mb-6">The Grand Estate</p>
           <h2 className="text-[#064e3b] font-serif text-4xl md:text-6xl mb-8 tracking-tight">Architectural Serenity meets <br /><span className="italic">Botanical Bliss</span></h2>
           <div className="w-20 h-0.5 bg-[#C5A059] mx-auto mb-10"></div>
-          <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed text-lg font-light">
-            More than a venue—a living legacy. Spanning twenty acres of manicured emerald lawns and hidden groves, 
-            Celebration Garden is the definitive setting for life’s most profound milestones.
-          </p>
+          {aboutText && (
+            <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed text-lg font-light">
+              {aboutText}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
