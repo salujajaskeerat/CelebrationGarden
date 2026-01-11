@@ -1,0 +1,57 @@
+{
+  "kind": "collectionType",
+  "collectionName": "scrapbook_entries",
+  "info": {
+    "singularName": "scrapbook-entry",
+    "pluralName": "scrapbook-entries",
+    "displayName": "Scrapbook Entry",
+    "description": "Scrapbook entries submitted by guests for invitations"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "maxLength": 255
+    },
+    "message": {
+      "type": "text",
+      "required": true
+    },
+    "phone": {
+      "type": "string",
+      "required": true,
+      "maxLength": 20
+    },
+    "relation": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "image_url": {
+      "type": "string",
+      "required": false,
+      "maxLength": 500
+    },
+    "invitation": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::invitation.invitation"
+    },
+    "submitted_at": {
+      "type": "datetime",
+      "required": false
+    }
+  }
+}
