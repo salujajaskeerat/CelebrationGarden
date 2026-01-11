@@ -47,7 +47,8 @@
     "invitation": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::invitation.invitation"
+      "target": "api::invitation.invitation",
+      "required": true
     },
     "submitted_at": {
       "type": "datetime",
