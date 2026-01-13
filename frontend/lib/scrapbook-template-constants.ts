@@ -1,0 +1,1 @@
+export const ENTRIES_PER_PAGE_DEFAULT = 4;

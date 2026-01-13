@@ -31,3 +31,30 @@ export async function fetchStrapi<T>(
   return response.json();
 }
 
+// Public helper for unauthenticated Strapi calls (client-safe)
+export async function fetchStrapiPublic<T>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<T> {
+  const url = `${strapiUrl}/api${endpoint}`;
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options?.headers,
+  };
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+    next: { revalidate: 60 },
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('Not found');
+    }
+    throw new Error(`Strapi API error: ${response.statusText}`);
+  }
+
+  return response.json();
+}
