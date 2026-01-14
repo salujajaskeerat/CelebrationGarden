@@ -22,8 +22,7 @@ type Entry = {
   image_url?: string;
 };
 
-type OrganizedResult = {
-  invitation: Invitation;
+type ModerationResult = {
   filtered_entries: Entry[];
   categorized_entries: {
     friends: Entry[];
@@ -31,6 +30,44 @@ type OrganizedResult = {
     extendedFamily: Entry[];
     colleagues: Entry[];
     others: Entry[];
+  };
+};
+
+type HighlightsResult = {
+  funny: Entry[];
+  secret: Entry[];
+};
+
+type OrderingResult = {
+  [key: string]: {
+    ordered_ids: number[];
+  };
+};
+
+type OrganizedResult = {
+  invitation: Invitation;
+  filtered_entries: Entry[];
+  categorized_entries: {
+    friends: {
+      ordered_ids: number[];
+      entries: Entry[];
+    };
+    closeRelatives: {
+      ordered_ids: number[];
+      entries: Entry[];
+    };
+    extendedFamily: {
+      ordered_ids: number[];
+      entries: Entry[];
+    };
+    colleagues: {
+      ordered_ids: number[];
+      entries: Entry[];
+    };
+    others: {
+      ordered_ids: number[];
+      entries: Entry[];
+    };
   };
   highlights: {
     funny: Entry[];
@@ -171,13 +208,17 @@ async function fetchEntries(invitationId: number): Promise<Entry[]> {
 }
 
 async function organizeScrapbook(invitation: Invitation, entries: Entry[]): Promise<OrganizedResult> {
-  // Try single LLM call for all tasks (moderation, categorization, highlights)
+  // Try parallel LLM calls for speed optimization
   const llmResult = await tryLLMOrganization(invitation, entries);
   
   // Use LLM results if available, otherwise fallback to heuristic
   const filtered = llmResult?.filtered_entries || filterAbusive(entries);
   const categorized = llmResult?.categorized_entries || categorizeEntries(filtered);
   const highlights = llmResult?.highlights || pickHighlights(filtered);
+  const ordering = llmResult?.ordering || null;
+
+  // Apply ordering to categorized entries
+  const orderedCategorized = applyOrdering(categorized, ordering);
 
   const totalEntries =
     categorized.friends.length +
@@ -189,13 +230,63 @@ async function organizeScrapbook(invitation: Invitation, entries: Entry[]): Prom
   return {
     invitation,
     filtered_entries: filtered,
-    categorized_entries: categorized,
+    categorized_entries: orderedCategorized,
     highlights,
     pagination: {
       entriesPerPage: ENTRIES_PER_PAGE,
       totalPages: Math.max(1, Math.ceil(totalEntries / ENTRIES_PER_PAGE)),
     },
   };
+}
+
+function applyOrdering(
+  categorized: {
+    friends: Entry[];
+    closeRelatives: Entry[];
+    extendedFamily: Entry[];
+    colleagues: Entry[];
+    others: Entry[];
+  },
+  ordering: OrderingResult | null
+) {
+  const categories = ['friends', 'closeRelatives', 'extendedFamily', 'colleagues', 'others'] as const;
+  
+  const result: OrganizedResult['categorized_entries'] = {
+    friends: { ordered_ids: [], entries: [] },
+    closeRelatives: { ordered_ids: [], entries: [] },
+    extendedFamily: { ordered_ids: [], entries: [] },
+    colleagues: { ordered_ids: [], entries: [] },
+    others: { ordered_ids: [], entries: [] },
+  };
+
+  categories.forEach((category) => {
+    const entries = categorized[category];
+    if (ordering && ordering[category]?.ordered_ids) {
+      // Use LLM ordering
+      const orderedIds = ordering[category].ordered_ids;
+      const entryMap = new Map(entries.map((e) => [e.id, e]));
+      const orderedEntries = orderedIds
+        .map((id) => entryMap.get(id))
+        .filter((e): e is Entry => e !== undefined);
+      
+      // Add any entries not in the ordered list
+      const remaining = entries.filter((e) => !orderedIds.includes(e.id));
+      orderedEntries.push(...remaining);
+      
+      result[category] = {
+        ordered_ids: orderedEntries.map((e) => e.id),
+        entries: orderedEntries,
+      };
+    } else {
+      // Use original order
+      result[category] = {
+        ordered_ids: entries.map((e) => e.id),
+        entries: entries,
+      };
+    }
+  });
+
+  return result;
 }
 
 function filterAbusive(entries: Entry[]): Entry[] {
@@ -255,23 +346,48 @@ function pickHighlights(entries: Entry[]) {
 async function tryLLMOrganization(invitation: Invitation, entries: Entry[]) {
   const provider = process.env.LLM_PROVIDER || 'gemini';
 
+  try {
+    // Call 1 & 2 run in parallel for speed
+    const [moderationResult, highlightsResult] = await Promise.all([
+      moderateAndCategorize(invitation, entries, provider),
+      extractHighlights(invitation, entries, provider),
+    ]);
+
+    // Call 3 runs after Call 1 completes (needs categorized entries)
+    const orderingResult = moderationResult
+      ? await orderEntries(moderationResult.categorized_entries, provider)
+      : null;
+
+    return {
+      filtered_entries: moderationResult?.filtered_entries || null,
+      categorized_entries: moderationResult?.categorized_entries || null,
+      highlights: highlightsResult || null,
+      ordering: orderingResult || null,
+    };
+  } catch (error) {
+    console.warn('LLM organization failed, falling back to heuristic:', error);
+    return null;
+  }
+}
+
+async function moderateAndCategorize(
+  invitation: Invitation,
+  entries: Entry[],
+  provider: string
+): Promise<ModerationResult | null> {
   if (provider === 'gemini' && process.env.GOOGLE_AI_API_KEY) {
     try {
       const { GoogleGenerativeAI } = await import('@google/generative-ai');
       const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
-      // Use gemini-1.5-flash (faster) or gemini-1.5-pro (better quality)
-      // Can be overridden with GEMINI_MODEL env var
       const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
       const model = genAI.getGenerativeModel({ model: modelName });
-      const prompt = buildPrompt(invitation, entries);
-      console.log('Gemini organization prompt:', prompt);
+      const prompt = buildModerationPrompt(invitation, entries);
       const result = await model.generateContent(prompt);
       const text = result.response.text();
-      const parsed = safeParseJSON(text);
-      console.log('Gemini organization result:', parsed);
+      const parsed = safeParseJSON(text) as ModerationResult | null;
       return parsed;
     } catch (error) {
-      console.warn('Gemini organization failed, falling back to heuristic:', error);
+      console.warn('Gemini moderation failed:', error);
     }
   }
 
@@ -279,25 +395,108 @@ async function tryLLMOrganization(invitation: Invitation, entries: Entry[]) {
     try {
       const { Groq } = await import('groq-sdk');
       const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
-      const prompt = buildPrompt(invitation, entries);
+      const prompt = buildModerationPrompt(invitation, entries);
       const completion = await client.chat.completions.create({
         model: 'llama-3.1-70b-versatile',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.4,
       });
       const text = completion.choices?.[0]?.message?.content || '';
-      const parsed = safeParseJSON(text);
+      const parsed = safeParseJSON(text) as ModerationResult | null;
       return parsed;
     } catch (error) {
-      console.warn('Groq organization failed, falling back to heuristic:', error);
+      console.warn('Groq moderation failed:', error);
     }
   }
 
   return null;
 }
 
-function buildPrompt(invitation: Invitation, entries: Entry[]) {
-  return `You are organizing scrapbook entries for a wedding/event scrapbook. Perform ALL three tasks in a single response:
+async function extractHighlights(
+  invitation: Invitation,
+  entries: Entry[],
+  provider: string
+): Promise<HighlightsResult | null> {
+  if (provider === 'gemini' && process.env.GOOGLE_AI_API_KEY) {
+    try {
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
+      const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const prompt = buildHighlightsPrompt(invitation, entries);
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      const parsed = safeParseJSON(text) as HighlightsResult | null;
+      return parsed;
+    } catch (error) {
+      console.warn('Gemini highlights failed:', error);
+    }
+  }
+
+  if (provider === 'groq' && process.env.GROQ_API_KEY) {
+    try {
+      const { Groq } = await import('groq-sdk');
+      const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+      const prompt = buildHighlightsPrompt(invitation, entries);
+      const completion = await client.chat.completions.create({
+        model: 'llama-3.1-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.4,
+      });
+      const text = completion.choices?.[0]?.message?.content || '';
+      const parsed = safeParseJSON(text) as HighlightsResult | null;
+      return parsed;
+    } catch (error) {
+      console.warn('Groq highlights failed:', error);
+    }
+  }
+
+  return null;
+}
+
+async function orderEntries(
+  categorized: ModerationResult['categorized_entries'],
+  provider: string
+): Promise<OrderingResult | null> {
+  if (provider === 'gemini' && process.env.GOOGLE_AI_API_KEY) {
+    try {
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
+      const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const prompt = buildOrderingPrompt(categorized);
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      const parsed = safeParseJSON(text) as OrderingResult | null;
+      return parsed;
+    } catch (error) {
+      console.warn('Gemini ordering failed:', error);
+    }
+  }
+
+  if (provider === 'groq' && process.env.GROQ_API_KEY) {
+    try {
+      const { Groq } = await import('groq-sdk');
+      const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+      const prompt = buildOrderingPrompt(categorized);
+      const completion = await client.chat.completions.create({
+        model: 'llama-3.1-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.4,
+      });
+      const text = completion.choices?.[0]?.message?.content || '';
+      const parsed = safeParseJSON(text) as OrderingResult | null;
+      return parsed;
+    } catch (error) {
+      console.warn('Groq ordering failed:', error);
+    }
+  }
+
+  return null;
+}
+
+function buildModerationPrompt(invitation: Invitation, entries: Entry[]) {
+  return `You are moderating and categorizing scrapbook entries for a wedding/event scrapbook. Perform BOTH tasks:
 
 1. CONTENT MODERATION: Filter out any entries with abusive, inappropriate, hateful, or offensive content. Only include appropriate, positive messages.
 
@@ -307,10 +506,6 @@ function buildPrompt(invitation: Invitation, entries: Entry[]) {
    - extendedFamily: Extended family (Uncle, Aunt, Cousin, etc.)
    - colleagues: Work-related (Colleague, Coworker, etc.)
    - others: Everything else
-
-3. HIGHLIGHTS EXTRACTION: Identify the best entries for highlights:
-   - funny: Top 3-5 entries with humorous, lighthearted, or funny messages (appropriate humor only)
-   - secret: Top 3-5 entries with heartwarming, revealing, or touching messages (positive and meaningful)
 
 IMPORTANT RULES:
 - Do NOT modify or rewrite any messages - use them exactly as provided
@@ -331,10 +526,66 @@ Return JSON in this exact format:
     "extendedFamily": [Entry, Entry, ...],
     "colleagues": [Entry, Entry, ...],
     "others": [Entry, Entry, ...]
+  }
+}`;
+}
+
+function buildHighlightsPrompt(invitation: Invitation, entries: Entry[]) {
+  return `You are extracting highlights from scrapbook entries for a wedding/event scrapbook.
+
+Identify the best entries for highlights:
+   - funny: Top 3-5 entries with humorous, lighthearted, or funny messages (appropriate humor only)
+   - secret: Top 3-5 entries with heartwarming, revealing, or touching messages (positive and meaningful)
+
+IMPORTANT RULES:
+- Do NOT modify or rewrite any messages - use them exactly as provided
+- Do NOT change entry IDs, names, relations, or any other fields
+- Return ONLY valid JSON, no explanations or markdown
+- Select entries from the provided list only
+
+Invitation context: ${JSON.stringify(invitation)}
+All entries: ${JSON.stringify(entries)}
+
+Return JSON in this exact format:
+{
+  "funny": [Entry, Entry, ...],
+  "secret": [Entry, Entry, ...]
+}`;
+}
+
+function buildOrderingPrompt(categorized: ModerationResult['categorized_entries']) {
+  return `You are ordering scrapbook entries for optimal visual balance on a page.
+
+For each category, order entries to create visual rhythm:
+   - Alternate between entries with images and without images
+   - Vary message lengths (mix short, medium, long messages - avoid clustering all long messages together)
+   - Create a natural visual flow across the page
+   - Consider visual weight: entries with images and long messages have more visual weight
+
+IMPORTANT RULES:
+- Return ONLY valid JSON, no explanations or markdown
+- Return an ordered array of entry IDs for each category
+- Include ALL entry IDs from each category (don't skip any)
+- Order should optimize for visual balance and variety
+
+Categorized entries: ${JSON.stringify(categorized)}
+
+Return JSON in this exact format:
+{
+  "friends": {
+    "ordered_ids": [3, 7, 2, 9, 1, ...]
   },
-  "highlights": {
-    "funny": [Entry, Entry, ...],
-    "secret": [Entry, Entry, ...]
+  "closeRelatives": {
+    "ordered_ids": [5, 12, 8, ...]
+  },
+  "extendedFamily": {
+    "ordered_ids": [10, 15, 11, ...]
+  },
+  "colleagues": {
+    "ordered_ids": [20, 18, 22, ...]
+  },
+  "others": {
+    "ordered_ids": [25, 27, 24, ...]
   }
 }`;
 }

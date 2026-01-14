@@ -22,11 +22,26 @@ export type ScrapbookTemplateProps = {
     location?: string;
   };
   categorizedEntries: {
-    friends: ScrapbookEntry[];
-    closeRelatives: ScrapbookEntry[];
-    extendedFamily: ScrapbookEntry[];
-    colleagues: ScrapbookEntry[];
-    others: ScrapbookEntry[];
+    friends: {
+      ordered_ids: number[];
+      entries: ScrapbookEntry[];
+    };
+    closeRelatives: {
+      ordered_ids: number[];
+      entries: ScrapbookEntry[];
+    };
+    extendedFamily: {
+      ordered_ids: number[];
+      entries: ScrapbookEntry[];
+    };
+    colleagues: {
+      ordered_ids: number[];
+      entries: ScrapbookEntry[];
+    };
+    others: {
+      ordered_ids: number[];
+      entries: ScrapbookEntry[];
+    };
   };
   highlights: {
     funny: ScrapbookEntry[];
@@ -37,6 +52,7 @@ export type ScrapbookTemplateProps = {
 
 const serif = "'Playfair Display', 'Cormorant Garamond', serif";
 const sans = "'Inter', 'Poppins', system-ui, -apple-system, sans-serif";
+const handwritten = "'Dancing Script', cursive";
 
 // Polaroid styles
 const polaroidStyles = `
@@ -57,9 +73,32 @@ const polaroidStyles = `
     transform: rotate(0deg) scale(1.02);
   }
   
+  .polaroid-frame-row {
+    background: white;
+    padding: 10px 10px 35px 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+    transform: rotate(-1deg);
+    transition: transform 0.3s ease;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .polaroid-frame-row:hover {
+    transform: rotate(0deg) scale(1.01);
+  }
+  
   .polaroid-image {
     width: 100%;
     height: 200px;
+    object-fit: cover;
+    display: block;
+    background: #f5f5f5;
+  }
+  
+  .polaroid-image-row {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
     object-fit: cover;
     display: block;
     background: #f5f5f5;
@@ -74,6 +113,19 @@ const polaroidStyles = `
     justify-content: center;
     font-family: 'Playfair Display', serif;
     font-size: 64px;
+    font-weight: 700;
+    color: #C5A059;
+  }
+  
+  .polaroid-placeholder-row {
+    width: 100%;
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, #F0EDE8 0%, #E8E8E8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
     font-weight: 700;
     color: #C5A059;
   }
@@ -131,11 +183,11 @@ export function ScrapbookTemplate({
   entriesPerPage = ENTRIES_PER_PAGE_DEFAULT,
 }: ScrapbookTemplateProps) {
   const sections = [
-    { title: 'Friends', entries: categorizedEntries.friends },
-    { title: 'Close Relatives', entries: categorizedEntries.closeRelatives },
-    { title: 'Extended Family', entries: categorizedEntries.extendedFamily },
-    { title: 'Colleagues', entries: categorizedEntries.colleagues },
-    { title: 'Others', entries: categorizedEntries.others },
+    { title: 'Friends', category: categorizedEntries.friends },
+    { title: 'Close Relatives', category: categorizedEntries.closeRelatives },
+    { title: 'Extended Family', category: categorizedEntries.extendedFamily },
+    { title: 'Colleagues', category: categorizedEntries.colleagues },
+    { title: 'Others', category: categorizedEntries.others },
   ];
 
   return (
@@ -145,11 +197,11 @@ export function ScrapbookTemplate({
         <CoverPage invitation={invitation} />
         {sections.map(
           (section) =>
-            section.entries.length > 0 && (
+            section.category.entries.length > 0 && (
               <SectionPage
                 key={section.title}
                 title={section.title}
-                entries={section.entries}
+                category={section.category}
                 entriesPerPage={entriesPerPage}
               />
             )
@@ -194,14 +246,22 @@ function CoverPage({ invitation }: { invitation: ScrapbookTemplateProps['invitat
 
 function SectionPage({
   title,
-  entries,
+  category,
   entriesPerPage,
 }: {
   title: string;
-  entries: ScrapbookEntry[];
+  category: ScrapbookTemplateProps['categorizedEntries']['friends'];
   entriesPerPage: number;
 }) {
-  const pages = chunk(entries, entriesPerPage);
+  // Use ordered entries if available, otherwise use original order
+  const orderedEntries = category.ordered_ids.length > 0
+    ? category.ordered_ids
+        .map((id) => category.entries.find((e) => e.id === id))
+        .filter((e): e is ScrapbookEntry => e !== undefined)
+        .concat(category.entries.filter((e) => !category.ordered_ids.includes(e.id)))
+    : category.entries;
+
+  const pages = chunk(orderedEntries, entriesPerPage);
 
   return (
     <>
@@ -211,9 +271,9 @@ function SectionPage({
             {title}
           </h2>
           <div className="w-16 h-0.5 bg-[#C5A059] opacity-60 my-4 mx-auto" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-10">
-            {pageEntries.map((entry) => (
-              <EntryCard key={entry.id} entry={entry} />
+          <div className="space-y-8 my-10">
+            {pageEntries.map((entry, entryIdx) => (
+              <EntryCard key={entry.id} entry={entry} index={entryIdx} />
             ))}
           </div>
           <Branding />
@@ -223,50 +283,66 @@ function SectionPage({
   );
 }
 
-function EntryCard({ entry }: { entry: ScrapbookEntry }) {
+function EntryCard({ entry, index = 0 }: { entry: ScrapbookEntry; index?: number }) {
   const initial = entry.name?.[0]?.toUpperCase() || '?';
   // Use image.url first, then fall back to image_url
   const imageUrl = entry.image?.url || entry.image_url;
   const hasImage = !!imageUrl;
-  
+  const isEven = index % 2 === 0;
+
+  // Row layout when image exists, column layout when no image
+  if (hasImage) {
+    return (
+      <div className={`flex flex-row gap-6 items-start ${isEven ? '' : 'flex-row-reverse'}`}>
+        {/* Image section - 35% width */}
+        <div className="flex-shrink-0" style={{ width: '35%' }}>
+          <div className="polaroid-container">
+            <div className="polaroid-frame-row">
+              <img
+                src={imageUrl}
+                alt={entry.image?.alternativeText || entry.name}
+                className="polaroid-image-row"
+              />
+              <div className="polaroid-caption">
+                <div className="text-sm font-semibold text-[#1A1A1A]" style={{ fontFamily: sans }}>
+                  {entry.name}
+                </div>
+                <div className="text-xs uppercase tracking-[0.1em] text-gray-500 mt-1" style={{ fontFamily: sans }}>
+                  {entry.relation}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Text section - 65% width */}
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="text-[18px] leading-8 text-[#1A1A1A]" style={{ fontFamily: handwritten }}>
+            {entry.message}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Column layout when no image
   return (
     <div className="flex flex-col items-center text-center p-6">
-      {hasImage ? (
-        <div className="polaroid-container mb-6">
-          <div className="polaroid-frame">
-            <img
-              src={imageUrl}
-              alt={entry.image?.alternativeText || entry.name}
-              className="polaroid-image"
-            />
-            <div className="polaroid-caption">
-              <div className="text-sm font-semibold text-[#1A1A1A]" style={{ fontFamily: sans }}>
-                {entry.name}
-              </div>
-              <div className="text-xs uppercase tracking-[0.1em] text-gray-500 mt-1" style={{ fontFamily: sans }}>
-                {entry.relation}
-              </div>
+      <div className="polaroid-container mb-6">
+        <div className="polaroid-frame">
+          <div className="polaroid-placeholder">
+            {initial}
+          </div>
+          <div className="polaroid-caption">
+            <div className="text-sm font-semibold text-[#1A1A1A]" style={{ fontFamily: sans }}>
+              {entry.name}
+            </div>
+            <div className="text-xs uppercase tracking-[0.1em] text-gray-500 mt-1" style={{ fontFamily: sans }}>
+              {entry.relation}
             </div>
           </div>
         </div>
-      ) : (
-        <div className="polaroid-container mb-6">
-          <div className="polaroid-frame">
-            <div className="polaroid-placeholder">
-              {initial}
-            </div>
-            <div className="polaroid-caption">
-              <div className="text-sm font-semibold text-[#1A1A1A]" style={{ fontFamily: sans }}>
-                {entry.name}
-              </div>
-              <div className="text-xs uppercase tracking-[0.1em] text-gray-500 mt-1" style={{ fontFamily: sans }}>
-                {entry.relation}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      <div className="text-[17px] leading-8 text-[#1A1A1A] max-w-xl" style={{ fontFamily: sans }}>
+      </div>
+      <div className="text-[18px] leading-8 text-[#1A1A1A] max-w-xl" style={{ fontFamily: handwritten }}>
         {entry.message}
       </div>
     </div>
@@ -343,7 +419,7 @@ function HighlightCard({ entry }: { entry: ScrapbookEntry }) {
         </div>
       )}
       <div className="flex-1">
-        <p className="text-lg leading-relaxed" style={{ fontFamily: serif }}>
+        <p className="text-lg leading-relaxed" style={{ fontFamily: handwritten }}>
           "{entry.message}"
         </p>
         <p className="text-sm text-gray-500 mt-2 text-right" style={{ fontFamily: sans }}>
