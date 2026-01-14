@@ -38,6 +38,92 @@ export type ScrapbookTemplateProps = {
 const serif = "'Playfair Display', 'Cormorant Garamond', serif";
 const sans = "'Inter', 'Poppins', system-ui, -apple-system, sans-serif";
 
+// Polaroid styles
+const polaroidStyles = `
+  .polaroid-container {
+    perspective: 1000px;
+  }
+  
+  .polaroid-frame {
+    background: white;
+    padding: 12px 12px 40px 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: rotate(-1deg);
+    transition: transform 0.3s ease;
+    width: 200px;
+  }
+  
+  .polaroid-frame:hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+  
+  .polaroid-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+    background: #f5f5f5;
+  }
+  
+  .polaroid-placeholder {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, #F0EDE8 0%, #E8E8E8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 64px;
+    font-weight: 700;
+    color: #C5A059;
+  }
+  
+  .polaroid-caption {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #E8E8E8;
+    text-align: center;
+  }
+  
+  .polaroid-container-small {
+    perspective: 1000px;
+  }
+  
+  .polaroid-frame-small {
+    background: white;
+    padding: 6px 6px 20px 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+    transform: rotate(2deg);
+    transition: transform 0.3s ease;
+    width: 80px;
+  }
+  
+  .polaroid-frame-small:hover {
+    transform: rotate(0deg) scale(1.05);
+  }
+  
+  .polaroid-image-small {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    display: block;
+    background: #f5f5f5;
+  }
+  
+  .polaroid-placeholder-small {
+    width: 100%;
+    height: 80px;
+    background: linear-gradient(135deg, #F0EDE8 0%, #E8E8E8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #C5A059;
+  }
+`;
+
 export function ScrapbookTemplate({
   invitation,
   categorizedEntries,
@@ -53,22 +139,25 @@ export function ScrapbookTemplate({
   ];
 
   return (
-    <div className="space-y-12">
-      <CoverPage invitation={invitation} />
-      {sections.map(
-        (section) =>
-          section.entries.length > 0 && (
-            <SectionPage
-              key={section.title}
-              title={section.title}
-              entries={section.entries}
-              entriesPerPage={entriesPerPage}
-            />
-          )
-      )}
-      <HighlightsPage highlights={highlights} />
-      <FooterPage invitation={invitation} />
-    </div>
+    <>
+      <style>{polaroidStyles}</style>
+      <div className="space-y-12">
+        <CoverPage invitation={invitation} />
+        {sections.map(
+          (section) =>
+            section.entries.length > 0 && (
+              <SectionPage
+                key={section.title}
+                title={section.title}
+                entries={section.entries}
+                entriesPerPage={entriesPerPage}
+              />
+            )
+        )}
+        <HighlightsPage highlights={highlights} />
+        <FooterPage invitation={invitation} />
+      </div>
+    </>
   );
 }
 
@@ -138,25 +227,45 @@ function EntryCard({ entry }: { entry: ScrapbookEntry }) {
   const initial = entry.name?.[0]?.toUpperCase() || '?';
   // Use image.url first, then fall back to image_url
   const imageUrl = entry.image?.url || entry.image_url;
+  const hasImage = !!imageUrl;
+  
   return (
     <div className="flex flex-col items-center text-center p-6">
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={entry.image?.alternativeText || entry.name}
-          className="w-36 h-36 rounded-full object-cover border-4 border-white shadow-lg mb-4"
-        />
+      {hasImage ? (
+        <div className="polaroid-container mb-6">
+          <div className="polaroid-frame">
+            <img
+              src={imageUrl}
+              alt={entry.image?.alternativeText || entry.name}
+              className="polaroid-image"
+            />
+            <div className="polaroid-caption">
+              <div className="text-sm font-semibold text-[#1A1A1A]" style={{ fontFamily: sans }}>
+                {entry.name}
+              </div>
+              <div className="text-xs uppercase tracking-[0.1em] text-gray-500 mt-1" style={{ fontFamily: sans }}>
+                {entry.relation}
+              </div>
+            </div>
+          </div>
+        </div>
       ) : (
-        <div className="w-36 h-36 rounded-full bg-gradient-to-br from-[#F0EDE8] to-[#E8E8E8] flex items-center justify-center font-serif text-5xl font-bold text-[#C5A059] border-4 border-white shadow-lg mb-4">
-          {initial}
+        <div className="polaroid-container mb-6">
+          <div className="polaroid-frame">
+            <div className="polaroid-placeholder">
+              {initial}
+            </div>
+            <div className="polaroid-caption">
+              <div className="text-sm font-semibold text-[#1A1A1A]" style={{ fontFamily: sans }}>
+                {entry.name}
+              </div>
+              <div className="text-xs uppercase tracking-[0.1em] text-gray-500 mt-1" style={{ fontFamily: sans }}>
+                {entry.relation}
+              </div>
+            </div>
+          </div>
         </div>
       )}
-      <div className="text-[22px] font-semibold text-[#1A1A1A] mb-1" style={{ fontFamily: sans }}>
-        {entry.name}
-      </div>
-      <div className="text-sm uppercase tracking-[0.15em] text-gray-500 mb-3" style={{ fontFamily: sans }}>
-        {entry.relation}
-      </div>
       <div className="text-[17px] leading-8 text-[#1A1A1A] max-w-xl" style={{ fontFamily: sans }}>
         {entry.message}
       </div>
@@ -210,22 +319,32 @@ function HighlightCard({ entry }: { entry: ScrapbookEntry }) {
   const initial = entry.name?.[0]?.toUpperCase() || '?';
   // Use image.url first, then fall back to image_url
   const imageUrl = entry.image?.url || entry.image_url;
+  const hasImage = !!imageUrl;
+  
   return (
     <div className="flex items-start gap-4 bg-[#FAF9F6] border-l-4 border-[#C5A059] p-4 rounded-sm">
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={entry.image?.alternativeText || entry.name}
-          className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm"
-        />
+      {hasImage ? (
+        <div className="polaroid-container-small flex-shrink-0">
+          <div className="polaroid-frame-small">
+            <img
+              src={imageUrl}
+              alt={entry.image?.alternativeText || entry.name}
+              className="polaroid-image-small"
+            />
+          </div>
+        </div>
       ) : (
-        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#F0EDE8] to-[#E8E8E8] flex items-center justify-center font-serif text-xl font-semibold text-[#C5A059] border-2 border-white shadow-sm">
-          {initial}
+        <div className="polaroid-container-small flex-shrink-0">
+          <div className="polaroid-frame-small">
+            <div className="polaroid-placeholder-small">
+              {initial}
+            </div>
+          </div>
         </div>
       )}
-      <div>
+      <div className="flex-1">
         <p className="text-lg leading-relaxed" style={{ fontFamily: serif }}>
-          “{entry.message}”
+          "{entry.message}"
         </p>
         <p className="text-sm text-gray-500 mt-2 text-right" style={{ fontFamily: sans }}>
           — {entry.name}, {entry.relation}

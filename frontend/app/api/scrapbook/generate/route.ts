@@ -259,11 +259,16 @@ async function tryLLMOrganization(invitation: Invitation, entries: Entry[]) {
     try {
       const { GoogleGenerativeAI } = await import('@google/generative-ai');
       const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+      // Use gemini-1.5-flash (faster) or gemini-1.5-pro (better quality)
+      // Can be overridden with GEMINI_MODEL env var
+      const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+      const model = genAI.getGenerativeModel({ model: modelName });
       const prompt = buildPrompt(invitation, entries);
+      console.log('Gemini organization prompt:', prompt);
       const result = await model.generateContent(prompt);
       const text = result.response.text();
       const parsed = safeParseJSON(text);
+      console.log('Gemini organization result:', parsed);
       return parsed;
     } catch (error) {
       console.warn('Gemini organization failed, falling back to heuristic:', error);
