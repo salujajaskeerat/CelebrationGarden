@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ScrapbookTemplate } from '../../components/ScrapbookTemplate';
 import { generateScrapbook } from '../../lib/scrapbook-service';
-import { generateScrapbookPDF } from '../../lib/pdf-generator';
+import { generateScrapbookPDF, generateScrapbookPDFBlob } from '../../lib/pdf-generator';
 
 interface Invitation {
   id: number;
@@ -13,6 +13,7 @@ interface Invitation {
   type: string;
   entryCount: number;
   isExpired: boolean;
+  scrapbookPdfUrl?: string | null;
 }
 
 interface OrganizedData {
@@ -35,6 +36,8 @@ export default function ScrapbookPage() {
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [generatingSlug, setGeneratingSlug] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
 
   const previewRef = useRef<HTMLDivElement | null>(null);
 
@@ -50,6 +53,13 @@ export default function ScrapbookPage() {
 
       if (data.success) {
         setInvitations(data.data);
+        // Update selected invitation if it exists
+        if (selectedInvitation) {
+          const updated = data.data.find((inv: Invitation) => inv.id === selectedInvitation.id);
+          if (updated) {
+            setSelectedInvitation(updated);
+          }
+        }
       } else {
         setError('Failed to load invitations');
       }
@@ -66,8 +76,12 @@ export default function ScrapbookPage() {
       setGenerateError(null);
       setGeneratingSlug(invitation.slug);
       setSelectedSlug(invitation.slug);
+      setSelectedInvitation(invitation);
       const data = await generateScrapbook(invitation.slug);
       setScrapbook(data);
+      
+      // Refresh invitations to get updated PDF URL
+      await fetchInvitations();
     } catch (err: any) {
       console.error(err);
       setGenerateError(err?.message || 'Failed to generate scrapbook');
@@ -88,6 +102,56 @@ export default function ScrapbookPage() {
     } finally {
       setDownloading(false);
     }
+  };
+
+  const handleGenerateAndSave = async () => {
+    if (!previewRef.current || !selectedInvitation) return;
+    try {
+      setSaving(true);
+      setGenerateError(null);
+      
+      // Generate PDF blob
+      const pdfBlob = await generateScrapbookPDFBlob(previewRef.current);
+      
+      // Upload to Cloudinary via API
+      const formData = new FormData();
+      formData.append('pdf', pdfBlob, `${selectedInvitation.slug}-scrapbook.pdf`);
+      formData.append('invitationSlug', selectedInvitation.slug);
+      
+      const response = await fetch('/api/scrapbook/generate-pdf', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to save PDF');
+      }
+      
+      const result = await response.json();
+      
+      // Refresh invitations to get updated PDF URL
+      await fetchInvitations();
+      
+      // Update selected invitation with new PDF URL
+      const updatedInvitation = invitations.find(inv => inv.id === selectedInvitation.id);
+      if (updatedInvitation) {
+        setSelectedInvitation(updatedInvitation);
+      }
+      
+      // Show success message
+      setGenerateError(null);
+    } catch (err: any) {
+      console.error('PDF save failed:', err);
+      setGenerateError(err?.message || 'Failed to save PDF to Cloudinary');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDownloadCached = (pdfUrl: string) => {
+    // Open PDF in new tab for download
+    window.open(pdfUrl, '_blank');
   };
 
   const formatDate = (dateString: string) => {
@@ -218,12 +282,27 @@ export default function ScrapbookPage() {
                 <p className="text-sm text-gray-600">Review the generated scrapbook before downloading.</p>
               </div>
               <div className="flex gap-3">
+                {selectedInvitation?.scrapbookPdfUrl && (
+                  <button
+                    onClick={() => handleDownloadCached(selectedInvitation.scrapbookPdfUrl!)}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    Download Latest PDF
+                  </button>
+                )}
                 <button
                   onClick={handleDownload}
                   disabled={downloading}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-800 disabled:opacity-60"
                 >
                   {downloading ? 'Preparing PDF...' : 'Download PDF'}
+                </button>
+                <button
+                  onClick={handleGenerateAndSave}
+                  disabled={saving || downloading}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60"
+                >
+                  {saving ? 'Saving to Cloudinary...' : 'Generate & Save PDF'}
                 </button>
               </div>
             </div>

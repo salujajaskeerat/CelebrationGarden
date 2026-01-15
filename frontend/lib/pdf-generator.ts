@@ -4,11 +4,11 @@ import jsPDF from 'jspdf';
 /**
  * Generate a PDF from the rendered scrapbook container.
  * Expects child elements with the class "scrapbook-page".
+ * Returns PDF as Blob for upload or download.
  */
-export async function generateScrapbookPDF(
-  container: HTMLElement,
-  filename = 'scrapbook.pdf'
-): Promise<void> {
+export async function generateScrapbookPDFBlob(
+  container: HTMLElement
+): Promise<Blob> {
   const pages = Array.from(container.querySelectorAll<HTMLElement>('.scrapbook-page'));
   const targets = pages.length ? pages : [container];
 
@@ -31,5 +31,27 @@ export async function generateScrapbookPDF(
     pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
   }
 
-  pdf.save(filename);
+  // Return PDF as Blob
+  return pdf.output('blob');
+}
+
+/**
+ * Generate and download a PDF from the rendered scrapbook container.
+ * Expects child elements with the class "scrapbook-page".
+ */
+export async function generateScrapbookPDF(
+  container: HTMLElement,
+  filename = 'scrapbook.pdf'
+): Promise<void> {
+  const blob = await generateScrapbookPDFBlob(container);
+  
+  // Create download link
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }

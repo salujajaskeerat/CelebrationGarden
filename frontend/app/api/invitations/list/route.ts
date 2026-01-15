@@ -4,7 +4,7 @@ import { fetchStrapi } from '../../../../lib/strapi';
 // Get list of all invitations with scrapbook entry counts
 export async function GET(request: NextRequest) {
   try {
-    // Fetch all invitations
+    // Fetch all invitations (no fields param to avoid Strapi 400)
     const invitationsResponse = await fetchStrapi<{
       data: Array<{
         id: number;
@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
         title: string;
         event_date: string;
         type: string;
+        scrapbook_pdf_url?: string;
       }> | null;
     }>('/invitations?sort=event_date:desc');
 
@@ -45,6 +46,7 @@ export async function GET(request: NextRequest) {
             type: invitation.type,
             entryCount,
             isExpired: new Date(invitation.event_date) < new Date(),
+            scrapbookPdfUrl: invitation.scrapbook_pdf_url || null,
           };
         } catch (error) {
           return {
@@ -55,6 +57,7 @@ export async function GET(request: NextRequest) {
             type: invitation.type,
             entryCount: 0,
             isExpired: new Date(invitation.event_date) < new Date(),
+            scrapbookPdfUrl: invitation.scrapbook_pdf_url || null,
           };
         }
       })
