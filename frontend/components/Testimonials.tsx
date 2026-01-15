@@ -1,6 +1,13 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import ScrollReveal from './ScrollReveal';
+
+interface TestimonialsProps {
+  testimonialsSubtitle?: string;
+  testimonialsHeading?: string;
+  testimonialsFooterText?: string;
+}
 
 interface Review {
   id: string;
@@ -56,7 +63,11 @@ const FALLBACK_REVIEWS: Review[] = [
 const GOOGLE_SHEET_ID = 'YOUR_SHEET_ID_HERE'; 
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv`;
 
-const Testimonials: React.FC = () => {
+const Testimonials: React.FC<TestimonialsProps> = ({
+  testimonialsSubtitle = 'Testimonials',
+  testimonialsHeading = "Don't take our word for it!<br />Hear it from our partners.",
+  testimonialsFooterText = 'Synched with our Client Registry'
+}) => {
   const [reviews, setReviews] = useState<Review[]>(FALLBACK_REVIEWS);
   const [loading, setLoading] = useState(false);
 
@@ -101,7 +112,8 @@ const Testimonials: React.FC = () => {
   return (
     <section id="testimonials" className="py-24 bg-[#F9F8F3] overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="mb-16">
+        <ScrollReveal>
+          <div className="mb-16">
           <p className="text-[#064e3b] font-medium tracking-[0.2em] uppercase text-[10px] mb-4">
             Testimonials
           </p>
@@ -185,17 +197,20 @@ const Testimonials: React.FC = () => {
               <span className="text-[#C5A059] text-2xl">+</span>
             </div>
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 group-hover:text-[#064e3b]">Add Your Story</p>
-            <p className="text-[10px] text-gray-300 mt-2 italic">Updated via our registry</p>
+            <p className="text-[10px] text-gray-300 mt-2 italic">Updated via our registry            </p>
           </div>
-        </div>
+          </div>
+        </ScrollReveal>
 
-        <div className="mt-12 flex items-center gap-6 opacity-40">
+        <ScrollReveal delay={400}>
+          <div className="mt-12 flex items-center gap-6 opacity-40">
           <div className="h-[1px] flex-grow bg-gray-400"></div>
           <p className="text-[9px] uppercase tracking-[0.4em] text-gray-500 font-bold">
             Synched with our Client Registry
           </p>
           <div className="h-[1px] flex-grow bg-gray-400"></div>
-        </div>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );

@@ -162,6 +162,20 @@
       "type": "string",
       "required": false,
       "maxLength": 500
+    },
+    "testimonials_subtitle": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    },
+    "testimonials_heading": {
+      "type": "text",
+      "required": false
+    },
+    "testimonials_footer_text": {
+      "type": "string",
+      "required": false,
+      "maxLength": 255
     }
   }
 }

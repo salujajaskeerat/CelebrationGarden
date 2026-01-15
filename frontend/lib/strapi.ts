@@ -25,7 +25,18 @@ export async function fetchStrapi<T>(
     if (response.status === 404) {
       throw new Error('Not found');
     }
-    throw new Error(`Strapi API error: ${response.statusText}`);
+    // Try to get more detailed error message from response
+    let errorMessage = `Strapi API error: ${response.statusText}`;
+    try {
+      const errorData = await response.text();
+      if (errorData) {
+        const errorText = errorData.length > 200 ? errorData.substring(0, 200) : errorData;
+        errorMessage = `Strapi API error (${response.status}): ${errorText}`;
+      }
+    } catch {
+      // If we can't parse error, use default message
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();

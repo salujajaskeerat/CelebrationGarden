@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
+import ScrollReveal from './ScrollReveal';
 
 export interface FAQItem {
   question: string;
@@ -98,16 +99,19 @@ const FAQ: React.FC<FAQProps> = ({
   return (
     <section id="faq" className="py-24 md:py-32 bg-white overflow-hidden">
       <div className="max-w-3xl mx-auto px-6">
-        <div className="text-center mb-16">
+        <ScrollReveal>
+          <div className="text-center mb-16">
           <h2 className="text-[#064e3b] font-serif text-4xl md:text-5xl mb-6">Frequently asked questions</h2>
           <p className="text-gray-500 text-lg font-light">
             Everything you need to know about the estate and our services. <br />
-            Can’t find what you’re looking for? <a href="#inquire" className="text-[#C5A059] border-b border-[#C5A059] pb-0.5 hover:text-[#064e3b] hover:border-[#064e3b] transition-colors">Speak to our concierge team.</a>
+            Can’t find what you’re looking for?             <a href="#inquire" className="text-[#C5A059] border-b border-[#C5A059] pb-0.5 hover:text-[#064e3b] hover:border-[#064e3b] transition-colors">Speak to our concierge team.</a>
           </p>
-        </div>
+          </div>
+        </ScrollReveal>
 
-        {/* Category Tabs */}
-        <div className="flex flex-wrap justify-center gap-3 mb-12">
+        <ScrollReveal delay={200}>
+          {/* Category Tabs */}
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
           {availableCategories.map((cat) => (
             <button
               key={cat}
@@ -124,10 +128,12 @@ const FAQ: React.FC<FAQProps> = ({
               {cat}
             </button>
           ))}
-        </div>
+          </div>
+        </ScrollReveal>
 
-        {/* FAQ List */}
-        <div className="space-y-4">
+        <ScrollReveal delay={400}>
+          {/* FAQ List */}
+          <div className="space-y-4">
           {filteredFaqs.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-400">No FAQs available for this category.</p>
@@ -171,10 +177,12 @@ const FAQ: React.FC<FAQProps> = ({
             </div>
             ))
           )}
-        </div>
+          </div>
+        </ScrollReveal>
         
-        {/* Help Bubble - Design element from image */}
-        <div className="mt-20 flex flex-col items-center">
+        <ScrollReveal delay={600}>
+          {/* Help Bubble - Design element from image */}
+          <div className="mt-20 flex flex-col items-center">
           <div className="p-1 rounded-full bg-gray-50 border border-gray-100 mb-6">
              <div className="flex -space-x-2">
                 {[1, 2, 3].map(i => (
@@ -190,7 +198,8 @@ const FAQ: React.FC<FAQProps> = ({
           >
             Get in touch
           </a>
-        </div>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );

@@ -48,18 +48,12 @@ const Hero: React.FC<HeroProps> = ({
             {heroDescription}
           </p>
         )}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+        <div className="flex items-center justify-center">
           <a 
             href="#inquire" 
             className="bg-[#064e3b] text-white px-10 py-5 font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-[#C5A059] transition-all duration-500 shadow-2xl min-w-[220px]"
           >
             Request Brochure
-          </a>
-          <a 
-            href="#calculator" 
-            className="text-white border border-white/40 backdrop-blur-md px-10 py-5 font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-white hover:text-[#064e3b] transition-all duration-500 min-w-[220px]"
-          >
-            Get Price Estimate
           </a>
         </div>
       </div>

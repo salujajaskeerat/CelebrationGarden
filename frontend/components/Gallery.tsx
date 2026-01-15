@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react';
+import ScrollReveal from './ScrollReveal';
 
 interface GalleryImage {
   url: string;
@@ -67,7 +68,8 @@ const Gallery: React.FC = () => {
   return (
     <section id="gallery" className="py-24 md:py-36 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-8">
+        <ScrollReveal>
+          <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-8">
           <div className="max-w-xl">
             <p className="text-[#C5A059] font-bold tracking-[0.4em] uppercase text-[10px] mb-4">
               Visual Narrative
@@ -79,9 +81,11 @@ const Gallery: React.FC = () => {
           <p className="text-gray-400 text-sm leading-relaxed max-w-xs border-l border-gray-100 pl-8 pb-2">
             A curated selection of moments captured within our emerald sanctuary. Explore the tapestry of light and love.
           </p>
-        </div>
+          </div>
+        </ScrollReveal>
 
-        <div className="flex flex-wrap gap-4 mb-16 justify-center md:justify-start">
+        <ScrollReveal delay={200}>
+          <div className="flex flex-wrap gap-4 mb-16 justify-center md:justify-start">
           {categories.map((cat) => (
             <button
               key={cat}
@@ -122,7 +126,8 @@ const Gallery: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );

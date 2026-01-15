@@ -1,5 +1,6 @@
 
 import React from 'react';
+import ScrollReveal from './ScrollReveal';
 
 interface VenueIntroProps {
   aboutText?: string;
@@ -11,7 +12,8 @@ const VenueIntro: React.FC<VenueIntroProps> = ({
   return (
     <section id="venue" className="py-24 md:py-32 bg-[#F9F8F3] overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-24">
+        <ScrollReveal>
+          <div className="text-center mb-24">
           <p className="text-[#C5A059] font-bold tracking-[0.4em] uppercase text-[10px] mb-6">The Grand Estate</p>
           <h2 className="text-[#064e3b] font-serif text-4xl md:text-6xl mb-8 tracking-tight">Architectural Serenity meets <br /><span className="italic">Botanical Bliss</span></h2>
           <div className="w-20 h-0.5 bg-[#C5A059] mx-auto mb-10"></div>
@@ -20,9 +22,11 @@ const VenueIntro: React.FC<VenueIntroProps> = ({
               {aboutText}
             </p>
           )}
-        </div>
+          </div>
+        </ScrollReveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+        <ScrollReveal delay={200}>
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
           {/* Section 1 */}
           <div className="md:col-span-7 relative group">
             <div className="overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] rounded-sm">
@@ -88,7 +92,8 @@ const VenueIntro: React.FC<VenueIntroProps> = ({
               />
             </div>
           </div>
-        </div>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );

@@ -548,6 +548,15 @@ export interface ApiHomePageHomePage extends Struct.SingleTypeSchema {
         maxLength: 50;
       }>;
     publishedAt: Schema.Attribute.DateTime;
+    testimonials_footer_text: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
+    testimonials_heading: Schema.Attribute.Text;
+    testimonials_subtitle: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 100;
+      }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -593,6 +602,7 @@ export interface ApiInquiryInquiry extends Struct.CollectionTypeSchema {
       }>;
     notes: Schema.Attribute.Text;
     phone: Schema.Attribute.String &
+      Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 50;
       }>;
