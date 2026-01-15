@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { strapiUrl, strapiApiToken } from '../../lib/strapi';
+import { strapiUrl, strapiApiToken } from '../../../lib/strapi';
 
 export async function POST(request: NextRequest) {
   try {

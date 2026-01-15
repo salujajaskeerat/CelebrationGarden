@@ -27,6 +27,10 @@ const dancingScript = Dancing_Script({
 export const metadata: Metadata = {
   title: 'Celebration Garden | Modern Secret Garden Venue',
   description: 'A premium, high-conversion landing page for Celebration Garden, featuring a Modern Secret Garden aesthetic with deep emerald, champagne gold, and soft ivory tones.',
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
 }
 
 export default function RootLayout({

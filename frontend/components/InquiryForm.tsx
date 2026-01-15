@@ -40,7 +40,7 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
     phone: '',
     date: '',
     guests: '150',
-    lawn: 'emerald'
+    lawn: 'maharaja'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -256,8 +256,8 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
                     value={formData.lawn}
                     onChange={(e) => setFormData({...formData, lawn: e.target.value})}
                   >
-                    <option value="emerald">The Emerald Grand Lawn</option>
-                    <option value="grove">The Secret Grove Lawn</option>
+                    <option value="maharaja">The Maharaja Lawn — Ideal for grand celebrations (up to 700 guests)</option>
+                    <option value="darbar">The Darbar Lawn — Perfect for intimate gatherings (up to 150 guests)</option>
                   </select>
                 </div>
                 <div className="space-y-2">
