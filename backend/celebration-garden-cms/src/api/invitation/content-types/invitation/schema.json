@@ -58,6 +58,10 @@
       "allowedTypes": [
         "images"
       ]
+    },
+    "scrapbook_pdf_url": {
+      "type": "text",
+      "required": false
     }
   }
 }

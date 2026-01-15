@@ -1,7 +1,15 @@
+import fs from 'fs';
+import path from 'path';
+
 export default ({ env }) => ({
   upload: {
     config: {
-      provider: 'cloudinary',
+      provider: (() => {
+        const root = process.cwd();
+        const distProvider = path.resolve(root, 'dist/src/providers/cloudinary');
+        const srcProvider = path.resolve(root, 'src/providers/cloudinary');
+        return fs.existsSync(distProvider) ? distProvider : srcProvider;
+      })(),
       providerOptions: {
         cloud_name: env('CLOUDINARY_NAME'),
         api_key: env('CLOUDINARY_KEY'),
@@ -14,6 +22,8 @@ export default ({ env }) => ({
           use_filename: true,
           unique_filename: true,
           overwrite: false,
+          // Auto-detect resource type (image, video, raw) so PDFs stay raw
+          resource_type: 'auto',
           // Image optimization settings
           transformation: [
             {
@@ -39,6 +49,8 @@ export default ({ env }) => ({
           use_filename: true,
           unique_filename: true,
           overwrite: false,
+          // Auto-detect resource type (image, video, raw) so PDFs stay raw
+          resource_type: 'auto',
           transformation: [
             {
               quality: 'auto:good',

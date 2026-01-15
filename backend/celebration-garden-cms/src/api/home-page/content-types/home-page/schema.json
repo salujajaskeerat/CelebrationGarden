@@ -14,7 +14,7 @@
   "attributes": {
     "hero_title": {
       "type": "string",
-      "required": true,
+      "required": false,
       "maxLength": 255
     },
     "hero_subtitle": {
@@ -35,11 +35,11 @@
     },
     "about_text": {
       "type": "text",
-      "required": true
+      "required": false
     },
     "address_line1": {
       "type": "string",
-      "required": true,
+      "required": false,
       "maxLength": 255
     },
     "address_line2": {
@@ -54,27 +54,114 @@
     },
     "address_country": {
       "type": "string",
-      "required": true,
+      "required": false,
       "maxLength": 100
     },
     "phone_number": {
       "type": "string",
-      "required": true,
+      "required": false,
       "maxLength": 50
     },
     "whatsapp_phone": {
       "type": "string",
-      "required": true,
+      "required": false,
       "maxLength": 50
     },
     "meta_title": {
       "type": "string",
-      "required": true,
+      "required": false,
       "maxLength": 255
     },
     "meta_description": {
       "type": "text",
-      "required": true
+      "required": false
+    },
+    "brand_name": {
+      "type": "string",
+      "required": false,
+      "maxLength": 255
+    },
+    "nav_items": {
+      "type": "json",
+      "required": false
+    },
+    "nav_cta_label": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    },
+    "form_title": {
+      "type": "string",
+      "required": false,
+      "maxLength": 255
+    },
+    "form_subtitle": {
+      "type": "string",
+      "required": false,
+      "maxLength": 255
+    },
+    "form_field_name_label": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    },
+    "form_field_name_placeholder": {
+      "type": "string",
+      "required": false,
+      "maxLength": 255
+    },
+    "form_field_email_label": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    },
+    "form_field_email_placeholder": {
+      "type": "string",
+      "required": false,
+      "maxLength": 255
+    },
+    "form_field_phone_label": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    },
+    "form_field_phone_placeholder": {
+      "type": "string",
+      "required": false,
+      "maxLength": 255
+    },
+    "form_field_lawn_label": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    },
+    "form_field_date_label": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    },
+    "form_field_guests_label": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    },
+    "form_submit_label": {
+      "type": "string",
+      "required": false,
+      "maxLength": 100
+    },
+    "form_success_message": {
+      "type": "text",
+      "required": false
+    },
+    "footer_text": {
+      "type": "text",
+      "required": false
+    },
+    "instagram_url": {
+      "type": "string",
+      "required": false,
+      "maxLength": 500
     }
   }
 }
